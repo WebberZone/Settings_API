@@ -99,7 +99,25 @@ if ( ! class_exists( 'Plugin_Name_Settings' ) ) :
 				),
 			);
 
-			$this->settings_api = new Plugin_Name_Admin\Settings_API( $this->settings_key, self::$prefix );
+			$props = array(
+				'menu_type'         => 'submenu',
+				'parent_slug'       => 'options-genera.php',
+				'menu_slug'         => $this->menu_slug,
+				'default_tab'       => 'general',
+				'help_sidebar'      => $this->get_help_sidebar(),
+				'help_tabs'         => $this->get_help_tabs(),
+				'admin_footer_text' => $this->get_admin_footer_text(),
+			);
+
+			$args = array(
+				'translation_strings' => $this->get_translation_strings(),
+				'props'               => $props,
+				'settings_sections'   => $this->get_settings_sections(),
+				'registered_settings' => $this->get_registered_settings(),
+				'upgraded_settings'   => array(),
+			);
+
+			$this->settings_api = new Plugin_Name_Admin\Settings_API( $this->settings_key, self::$prefix, $args );
 			$this->settings_api->set_translation_strings( $this->get_translation_strings() );
 			$this->settings_api->set_props( $args );
 			$this->settings_api->set_sections( $this->get_settings_sections() );
@@ -154,7 +172,6 @@ if ( ! class_exists( 'Plugin_Name_Settings' ) ) :
 			 * @param array $strings Translation strings.
 			 */
 			return apply_filters( self::$prefix . '_translation_strings', $strings );
-
 		}
 
 		/**
@@ -180,7 +197,6 @@ if ( ! class_exists( 'Plugin_Name_Settings' ) ) :
 			 * @param array $sections Array of settings' sections
 			 */
 			return apply_filters( self::$prefix . '_settings_sections', $sections );
-
 		}
 
 
@@ -208,7 +224,6 @@ if ( ! class_exists( 'Plugin_Name_Settings' ) ) :
 			 * @param array $plugin_name_setings Settings array
 			 */
 			return apply_filters( self::$prefix . '_registered_settings', $settings );
-
 		}
 
 		/**
@@ -439,7 +454,6 @@ if ( ! class_exists( 'Plugin_Name_Settings' ) ) :
 
 				return $settings;
 			}
-
 		}
 
 		/**
@@ -629,7 +643,6 @@ if ( ! class_exists( 'Plugin_Name_Settings' ) ) :
 					)
 				);
 			}
-
 		}
 
 		/**
@@ -645,9 +658,20 @@ if ( ! class_exists( 'Plugin_Name_Settings' ) ) :
 				</a>
 			<p>
 			<?php
-
 		}
 
+		/**
+		 * Add footer text on the plugin page.
+		 */
+		public function get_admin_footer_text() {
+			return sprintf(
+				/* translators: 1: Opening achor tag with Plugin page link, 2: Closing anchor tag, 3: Opening anchor tag with review link. */
+				__( 'Thank you for using %1$sPlugin_Name%2$s! Please %3$srate us%2$s on %3$sWordPress.org%2$s', 'plugin-name' ),
+				'<a href="https://webberzone.com/plugins/plugin-name/" target="_blank">',
+				'</a>',
+				'<a href="https://wordpress.org/support/plugin/plugin-name/reviews/#new-post" target="_blank">'
+			);
+		}
 
 		/**
 		 * Modify settings when they are being saved.
@@ -668,14 +692,13 @@ if ( ! class_exists( 'Plugin_Name_Settings' ) ) :
 
 	}
 
-	/**
-	 * Register settings function
-	 *
-	 * @since 1.0.0
-	 */
-	function plugin_name_register_settings() {
-		Plugin_Name_Settings::get_instance();
-	}
-	add_action( 'init', 'plugin_name_register_settings', 999 );
+	/** Initiate the class */
+	add_action(
+		'init',
+		function () {
+			Plugin_Name_Settings::get_instance();
+		},
+		999
+	);
 
 endif;

@@ -23,7 +23,7 @@ if ( ! class_exists( 'Settings_API' ) ) :
 	/**
 	 * Settings API wrapper class
 	 *
-	 * @version 2.1.0
+	 * @version 2.2.0
 	 */
 	class Settings_API {
 
@@ -32,7 +32,7 @@ if ( ! class_exists( 'Settings_API' ) ) :
 		 *
 		 * @var   string
 		 */
-		const VERSION = '2.1.0';
+		const VERSION = '2.2.0';
 
 		/**
 		 * Settings Key.
@@ -54,6 +54,22 @@ if ( ! class_exists( 'Settings_API' ) ) :
 		 * @var array Translation strings.
 		 */
 		public $translation_strings;
+
+		/**
+		 * Menu type.
+		 *
+		 * @see add_custom_menu_page()
+		 *
+		 * @var string Menu slug.
+		 */
+		public $menu_type;
+
+		/**
+		 * The slug name of the parent of the menu.
+		 *
+		 * @var string Menu slug of the parent.
+		 */
+		public $parent_slug;
 
 		/**
 		 * The slug name to refer to this menu by (should be unique for this menu).
@@ -121,10 +137,18 @@ if ( ! class_exists( 'Settings_API' ) ) :
 		/**
 		 * Main constructor class.
 		 *
-		 * @param string $settings_key Settings key.
-		 * @param string $prefix       Prefix. Used for actions and filters.
+		 * @param string $settings_key              Settings key.
+		 * @param string $prefix                    Prefix. Used for actions and filters.
+		 * @param mixed  $args                      {
+		 *     Array or string of arguments. Default is blank array.
+		 *     @type array  $translation_strings    Translation strings.
+		 *     @type array  $settings_sections      Settings sections.
+		 *     @type array  $props                  Properties.
+		 *     @type array  $registered_settings    Registered settings.
+		 *     @type array  $upgraded_settings      Upgraded settings.
+		 * }
 		 */
-		public function __construct( $settings_key, $prefix ) {
+		public function __construct( $settings_key, $prefix, $args ) {
 
 			if ( ! defined( 'WZ_SETTINGS_API_VERSION' ) ) {
 				define( 'WZ_SETTINGS_API_VERSION', self::VERSION );
@@ -133,14 +157,28 @@ if ( ! class_exists( 'Settings_API' ) ) :
 			$this->settings_key = $settings_key;
 			$this->prefix       = $prefix;
 
+			$defaults = array(
+				'translation_strings' => array(),
+				'props'               => array(),
+				'settings_sections'   => array(),
+				'registered_settings' => array(),
+				'upgraded_settings'   => array(),
+			);
+			$args     = wp_parse_args( $args, $defaults );
+
 			$this->hooks();
+			$this->set_translation_strings( $args['translation_strings'] );
+			$this->set_props( $args['props'] );
+			$this->set_sections( $args['settings_sections'] );
+			$this->set_registered_settings( $args['registered_settings'] );
+			$this->set_upgraded_settings( $args['upgraded_settings'] );
 		}
 
 		/**
 		 * Adds the functions to the appropriate WordPress hooks.
 		 */
 		public function hooks() {
-			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+			add_action( 'admin_menu', array( $this, 'admin_menu' ), 11 );
 			add_action( 'admin_init', array( $this, 'admin_init' ) );
 			add_action( 'admin_footer_text', array( $this, 'admin_footer_text' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
@@ -152,6 +190,8 @@ if ( ! class_exists( 'Settings_API' ) ) :
 		 * @param array|string $args {
 		 *     Array or string of arguments. Default is blank array.
 		 *
+		 *     @type string $menu_type         Admin menu type. See add_custom_menu_page() for options.
+		 *     @type string $menu_parent       Parent menu slug.
 		 *     @type string $menu_slug         Admin menu slug.
 		 *     @type string $default_tab       Default tab.
 		 *     @type string $admin_footer_text Admin footer text.
@@ -161,8 +201,9 @@ if ( ! class_exists( 'Settings_API' ) ) :
 		 */
 		public function set_props( $args ) {
 
-			// Args prefixed with an underscore are reserved for internal use.
 			$defaults = array(
+				'menu_type'         => 'options',
+				'parent_slug'       => 'options-general.php',
 				'menu_slug'         => '',
 				'default_tab'       => 'general',
 				'admin_footer_text' => '',
@@ -175,13 +216,26 @@ if ( ! class_exists( 'Settings_API' ) ) :
 			foreach ( $args as $name => $value ) {
 				$this->$name = $value;
 			}
-
 		}
 
 		/**
 		 * Sets translation strings.
 		 *
-		 * @param array $strings Array of translation strings.
+		 * @param array $strings {
+		 *     Array of translation strings.
+		 *
+		 *     @type string $page_title           Page title.
+		 *     @type string $menu_title           Menu title.
+		 *     @type string $page_header          Page header.
+		 *     @type string $reset_message        Reset message.
+		 *     @type string $success_message      Success message.
+		 *     @type string $save_changes         Save changes button label.
+		 *     @type string $reset_settings       Reset settings button label.
+		 *     @type string $reset_button_confirm Reset button confirmation message.
+		 *     @type string $checkbox_modified    Checkbox modified label.
+		 * }
+		 *
+		 * @return void
 		 */
 		public function set_translation_strings( $strings ) {
 
@@ -334,12 +388,13 @@ if ( ! class_exists( 'Settings_API' ) ) :
 		 */
 		public function admin_menu() {
 			$menu = array(
-				'type'       => 'options',
-				'page_title' => $this->translation_strings['page_title'],
-				'menu_title' => $this->translation_strings['menu_title'],
-				'capability' => 'manage_options',
-				'menu_slug'  => $this->menu_slug,
-				'function'   => array( $this, 'plugin_settings' ),
+				'type'        => $this->menu_type,
+				'parent_slug' => $this->parent_slug,
+				'page_title'  => $this->translation_strings['page_title'],
+				'menu_title'  => $this->translation_strings['menu_title'],
+				'capability'  => 'manage_options',
+				'menu_slug'   => $this->menu_slug,
+				'function'    => array( $this, 'plugin_settings' ),
 			);
 
 			$this->settings_page = $this->add_custom_menu_page( $menu );
@@ -358,7 +413,6 @@ if ( ! class_exists( 'Settings_API' ) ) :
 			if ( $hook === $this->settings_page ) {
 				$this->enqueue_scripts_styles();
 			}
-
 		}
 
 		/**
@@ -558,7 +612,6 @@ if ( ! class_exists( 'Settings_API' ) ) :
 			} else {
 				return false;
 			}
-
 		}
 
 
@@ -597,10 +650,10 @@ if ( ! class_exists( 'Settings_API' ) ) :
 		 * Get the value of a settings field.
 		 *
 		 * @param string $option  Settings field name.
-		 * @param string $default Default text if it's not found.
+		 * @param string $default_value Default text if it's not found.
 		 * @return string
 		 */
-		public function get_option( $option, $default = '' ) {
+		public function get_option( $option, $default_value = '' ) {
 
 			$options = get_option( $this->settings_key );
 
@@ -608,7 +661,7 @@ if ( ! class_exists( 'Settings_API' ) ) :
 				return $options[ $option ];
 			}
 
-			return $default;
+			return $default_value;
 		}
 
 		/**
@@ -791,12 +844,11 @@ if ( ! class_exists( 'Settings_API' ) ) :
 
 			$html  = sprintf( '<input type="hidden" name="%1$s[%2$s]" value="-1" />', $this->settings_key, sanitize_key( $args['id'] ) );
 			$html .= sprintf( '<input type="checkbox" id="%1$s[%2$s]" name="%1$s[%2$s]" value="1" %3$s />', $this->settings_key, sanitize_key( $args['id'] ), $checked );
-			$html .= ( $value <> $default ) ? '<em style="color:orange">' . $this->translation_strings['checkbox_modified'] . '</em>' : ''; // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
+			$html .= ( (bool) $value !== (bool) $default ) ? '<em style="color:orange">' . $this->translation_strings['checkbox_modified'] . '</em>' : ''; // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
 			$html .= $this->get_field_description( $args );
 
 			/** This filter has been defined in class-settings-api.php */
 			echo apply_filters( $this->prefix . '_after_setting_output', $html, $args ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-
 		}
 
 		/**
@@ -844,7 +896,6 @@ if ( ! class_exists( 'Settings_API' ) ) :
 
 			/** This filter has been defined in class-settings-api.php */
 			echo apply_filters( $this->prefix . '_after_setting_output', $html, $args ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-
 		}
 
 		/**
@@ -1291,7 +1342,6 @@ if ( ! class_exists( 'Settings_API' ) ) :
 			 * @param array $input Input settings array.
 			 */
 			return apply_filters( $this->prefix . '_settings_sanitize', $output, $input );
-
 		}
 
 		/**
@@ -1641,7 +1691,6 @@ if ( ! class_exists( 'Settings_API' ) ) :
 			foreach ( $this->help_tabs as $tab ) {
 				$screen->add_help_tab( $tab );
 			}
-
 		}
 
 	}
