@@ -5,13 +5,13 @@
  * A reusable API class for creating multi-step settings wizards.
  * This class provides the framework for creating guided setup experiences.
  *
- * @package WebberZone\Snippetz\Admin
+ * @package WebberZone\Settings_API\Admin
  */
 
-namespace WebberZone\Snippetz\Admin\Settings;
+namespace WebberZone\Settings_API\Admin\Settings;
 
-use WebberZone\Snippetz\Admin\Settings\Settings_Sanitize;
-use WebberZone\Snippetz\Admin\Settings\Settings_API;
+use WebberZone\Settings_API\Admin\Settings\Settings_Sanitize;
+use WebberZone\Settings_API\Admin\Settings\Settings_API;
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {

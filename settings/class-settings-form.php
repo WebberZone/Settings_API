@@ -4,10 +4,10 @@
  *
  * @link  https://webberzone.com
  *
- * @package WebberZone\Snippetz\Admin
+ * @package WebberZone\Settings_API\Admin
  */
 
-namespace WebberZone\Snippetz\Admin\Settings;
+namespace WebberZone\Settings_API\Admin\Settings;
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
