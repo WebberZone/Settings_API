@@ -1,4 +1,7 @@
 jQuery(document).ready(function ($) {
+
+	const prefix = WZSettingsAdmin.prefix || 'wz';
+
 	// File browser.
 	$('.file-browser').on('click', function (event) {
 		event.preventDefault();
@@ -23,29 +26,6 @@ jQuery(document).ready(function ($) {
 		file_frame.open();
 	});
 
-	// Prompt the user when they leave the page without saving the form.
-	var formmodified = 0;
-
-	function confirmFormChange() {
-		formmodified = 1;
-	}
-
-	function confirmExit() {
-		if (formmodified == 1) {
-			return true;
-		}
-	}
-
-	function formNotModified() {
-		formmodified = 0;
-	}
-
-	$('form').on('change', 'input, textarea, select', confirmFormChange);
-
-	window.onbeforeunload = confirmExit;
-
-	$('input[name="submit"], input#search-submit, input#doaction, input#doaction2, input[name="filter_action"]').on('click', formNotModified);
-
 	$(function () {
 		$("#post-body-content").tabs({
 			create: function (event, ui) {
@@ -63,8 +43,18 @@ jQuery(document).ready(function ($) {
 		$(element).wpColorPicker();
 	});
 
+	// Reset default thumbnail - uses plugin-specific localized data.
 	$('.reset-default-thumb').on('click', function () {
-		$('#wzkb_settings\\[thumb_default\\]').val(wzkb_admin.thumb_default);
+		var settingsKey = WZSettingsAdmin.settings_key || '';
+		var thumbDefault = (typeof window[WZSettingsAdmin.prefix + '_admin'] !== 'undefined')
+			? window[WZSettingsAdmin.prefix + '_admin'].thumb_default
+			: '';
+		$('#' + settingsKey + '\\[thumb_default\\]').val(thumbDefault);
+	});
+
+	// Reset formmodified on submit.
+	$('#' + prefix + '-settings-form').on('submit', function () {
+		formmodified = 0;
 	});
 
 });

@@ -2,10 +2,12 @@
 /**
  * Functions to sanitize settings.
  *
- * @package WebberZone\AutoClose
+ * @link  https://webberzone.com
+ *
+ * @package WebberZone\Snippetz\Admin
  */
 
-namespace WebberZone\AutoClose\Admin\Settings;
+namespace WebberZone\Snippetz\Admin\Settings;
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
@@ -178,7 +180,7 @@ class Settings_Sanitize {
 		 *
 		 * @param array $allowedtags Allowed tags array.
 		 */
-		$allowedtags = apply_filters( 'wz_sanitize_allowed_tags', $allowedtags );
+		$allowedtags = apply_filters( $this->prefix . '_sanitize_allowed_tags', $allowedtags );
 
 		return wp_kses( wp_unslash( $value ), $allowedtags );
 	}
@@ -190,7 +192,7 @@ class Settings_Sanitize {
 	 * @return int  Sanitized value
 	 */
 	public function sanitize_checkbox_field( $value ) {
-		$value = ( -1 === (int) $value ) ? 0 : 1;
+		$value = in_array( (int) $value, array( 0, -1 ), true ) ? 0 : 1;
 
 		return $value;
 	}
@@ -347,40 +349,6 @@ class Settings_Sanitize {
 	}
 
 	/**
-	 * Sanitize date fields (HTML5 date inputs).
-	 *
-	 * @param string $value Date in 'Y-m-d' format.
-	 * @return string Sanitized date or empty string.
-	 */
-	public function sanitize_date_field( $value ) {
-		$value = sanitize_text_field( wp_unslash( $value ) );
-		// Validate 'YYYY-MM-DD'.
-		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
-			return $value;
-		}
-		return '';
-	}
-
-	/**
-	 * Sanitize datetime-local fields (HTML5 datetime-local inputs).
-	 *
-	 * @param string $value Datetime in 'Y-m-d\TH:i' format, or just 'Y-m-d'.
-	 * @return string Sanitized datetime or empty string.
-	 */
-	public function sanitize_datetime_field( $value ) {
-		$value = sanitize_text_field( wp_unslash( $value ) );
-		// If only date is given, fallback to 00:00 for time.
-		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
-			return $value . 'T00:00';
-		}
-		// Validate 'YYYY-MM-DDThh:mm'.
-		if ( preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $value ) ) {
-			return $value;
-		}
-		return '';
-	}
-
-	/**
 	 * Convert a string to CSV.
 	 *
 	 * @param array  $input_array Input string.
@@ -448,7 +416,7 @@ class Settings_Sanitize {
 	 */
 	public static function sanitize_tax_slugs( &$settings, $source_key, $target_key ) {
 		if ( isset( $settings[ $source_key ] ) ) {
-			$slugs = array_unique( str_getcsv( $settings[ $source_key ] ) );
+			$slugs = array_unique( str_getcsv( $settings[ $source_key ], ',', '"', '' ) );
 
 			foreach ( $slugs as $slug ) {
 				// Pattern is Name (taxonomy:term_taxonomy_id).

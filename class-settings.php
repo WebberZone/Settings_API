@@ -1,11 +1,16 @@
 <?php
 /**
- * Settings management.
+ * Register Settings.
  *
- * @package    AutoClose
+ * @link  https://webberzone.com
+ * @since 1.7.0
+ *
+ * @package WebberZone\Settings_API\Admin
  */
 
-namespace WebberZone\AutoClose\Admin;
+namespace WebberZone\Settings_API\Admin;
+
+use WebberZone\Settings_API\Util\Hook_Registry;
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
@@ -13,66 +18,81 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * AutoClose Settings class to register the settings.
+ * ATA Settings class to register the settings.
  *
- * @since 3.0.0
+ * @version 1.0
+ * @since   1.7.0
  */
 class Settings {
 
 	/**
 	 * Settings API.
 	 *
-	 * @since 3.0.0
-	 * @var   object
+	 * @since 1.7.0
+	 *
+	 * @var object Settings API.
 	 */
 	public $settings_api;
 
 	/**
+	 * Settings Page in Admin area.
+	 *
+	 * @since 1.7.0
+	 *
+	 * @var string Settings Page.
+	 */
+	public $settings_page;
+
+	/**
 	 * Prefix which is used for creating the unique filters and actions.
 	 *
-	 * @since 3.0.0
-	 * @var   string
+	 * @since 1.7.0
+	 *
+	 * @var string Prefix.
 	 */
 	public static $prefix;
 
 	/**
 	 * Settings Key.
 	 *
-	 * @since 3.0.0
-	 * @var   string
+	 * @since 1.7.0
+	 *
+	 * @var string Settings Key.
 	 */
 	public $settings_key;
 
 	/**
 	 * The slug name to refer to this menu by (should be unique for this menu).
 	 *
-	 * @since 3.0.0
-	 * @var   string
+	 * @since 1.7.0
+	 *
+	 * @var string Menu slug.
 	 */
 	public $menu_slug;
 
 	/**
-	 * Constructor.
+	 * Main constructor class.
 	 *
-	 * @since 3.0.0
+	 * @since 1.7.0
 	 */
 	public function __construct() {
-		$this->settings_key = 'acc_settings';
-		self::$prefix       = 'acc';
-		$this->menu_slug    = 'acc_options_page';
+		$this->settings_key = 'ata_settings';
+		self::$prefix       = 'ata';
+		$this->menu_slug    = 'ata_options_page';
 
-		add_action( 'admin_menu', array( $this, 'init_settings_api' ) );
-		add_action( 'admin_head', array( $this, 'admin_head' ), 11 );
-		add_action( self::$prefix . '_settings_page_header', array( $this, 'settings_page_header' ) );
-		add_filter( self::$prefix . '_settings_sanitize', array( $this, 'change_settings_on_save' ), 99 );
+		Hook_Registry::add_action( 'admin_menu', array( $this, 'initialise_settings' ) );
+		Hook_Registry::add_filter( 'plugin_row_meta', array( $this, 'plugin_row_meta' ), 11, 2 );
+		Hook_Registry::add_filter( 'plugin_action_links_' . plugin_basename( WZ_SNIPPETZ_FILE ), array( $this, 'plugin_actions_links' ) );
+		Hook_Registry::add_filter( 'ata_settings_sanitize', array( $this, 'change_settings_on_save' ), 99 );
+		Hook_Registry::add_action( 'admin_menu', array( $this, 'redirect_on_save' ) );
 	}
 
 	/**
-	 * Initialise the Settings API and set up all properties.
+	 * Initialise the settings API.
 	 *
-	 * @since 3.0.0
+	 * @since 3.3.0
 	 */
-	public function init_settings_api() {
+	public function initialise_settings() {
 		$props = array(
 			'default_tab'       => 'general',
 			'help_sidebar'      => $this->get_help_sidebar(),
@@ -82,8 +102,8 @@ class Settings {
 		);
 
 		$args = array(
-			'props'               => $props,
 			'translation_strings' => $this->get_translation_strings(),
+			'props'               => $props,
 			'settings_sections'   => $this->get_settings_sections(),
 			'registered_settings' => $this->get_registered_settings(),
 			'upgraded_settings'   => array(),
@@ -92,29 +112,31 @@ class Settings {
 		$this->settings_api = new Settings\Settings_API( $this->settings_key, self::$prefix, $args );
 	}
 
+
+
 	/**
 	 * Array containing the settings' sections.
 	 *
-	 * @since 3.0.0
-	 * @return array Translation strings.
+	 * @since 1.8.0
+	 *
+	 * @return array Settings array
 	 */
-	public static function get_translation_strings() {
+	public function get_translation_strings() {
 		$strings = array(
-			'page_title'           => esc_html__( 'AutoClose', 'autoclose' ),
-			'menu_title'           => esc_html__( 'AutoClose', 'autoclose' ),
-			'page_header'          => esc_html__( 'Automatically Close Comments, Pingbacks and Trackbacks Settings', 'autoclose' ),
-			'reset_message'        => esc_html__( 'Settings have been reset to their default values. Reload this page to view the updated settings.', 'autoclose' ),
-			'success_message'      => esc_html__( 'Settings updated.', 'autoclose' ),
-			'save_changes'         => esc_html__( 'Save Changes', 'autoclose' ),
-			'reset_settings'       => esc_html__( 'Reset all settings', 'autoclose' ),
-			'reset_button_confirm' => esc_html__( 'Do you really want to reset all these settings to their default values?', 'autoclose' ),
-			'checkbox_modified'    => esc_html__( 'Modified from default setting', 'autoclose' ),
+			'page_header'          => esc_html__( 'WebberZone Snippetz Settings', 'add-to-all' ),
+			'reset_message'        => esc_html__( 'Settings have been reset to their default values. Reload this page to view the updated settings.', 'add-to-all' ),
+			'success_message'      => esc_html__( 'Settings updated.', 'add-to-all' ),
+			'save_changes'         => esc_html__( 'Save Changes', 'add-to-all' ),
+			'reset_settings'       => esc_html__( 'Reset all settings', 'add-to-all' ),
+			'reset_button_confirm' => esc_html__( 'Do you really want to reset all these settings to their default values?', 'add-to-all' ),
+			'checkbox_modified'    => esc_html__( 'Modified from default setting', 'add-to-all' ),
 		);
 
 		/**
 		 * Filter the array containing the settings' sections.
 		 *
-		 * @since 3.0.0
+		 * @since 1.8.0
+		 *
 		 * @param array $strings Translation strings.
 		 */
 		return apply_filters( self::$prefix . '_translation_strings', $strings );
@@ -127,463 +149,951 @@ class Settings {
 	 */
 	public function get_menus() {
 		$menus = array();
-
-		// Settings menu.
-		$menus[] = array(
-			'settings_page' => true,
-			'type'          => 'options',
-			'page_title'    => esc_html__( 'AutoClose Settings', 'autoclose' ),
-			'menu_title'    => esc_html__( 'AutoClose', 'autoclose' ),
-			'menu_slug'     => $this->menu_slug,
-		);
+		if ( \WebberZone\Snippetz\Util\Helpers::is_snippets_enabled() ) {
+			$menus[] = array(
+				'settings_page' => true,
+				'type'          => 'submenu',
+				'parent_slug'   => 'edit.php?post_type=ata_snippets',
+				'page_title'    => esc_html__( 'WebberZone Snippetz Settings', 'add-to-all' ),
+				'menu_title'    => esc_html__( 'Settings', 'add-to-all' ),
+				'menu_slug'     => $this->menu_slug,
+			);
+		} else {
+			$menus[] = array(
+				'settings_page' => true,
+				'type'          => 'submenu',
+				'parent_slug'   => 'options-general.php',
+				'page_title'    => esc_html__( 'WebberZone Snippetz Settings', 'add-to-all' ),
+				'menu_title'    => esc_html__( 'Snippetz', 'add-to-all' ),
+				'menu_slug'     => $this->menu_slug,
+			);
+		}
 
 		return $menus;
 	}
 
-
 	/**
 	 * Array containing the settings' sections.
 	 *
-	 * @since 3.0.0
-	 * @return array Settings sections.
+	 * @since 1.7.0
+	 *
+	 * @return array Settings array
 	 */
 	public static function get_settings_sections() {
 		$settings_sections = array(
-			'general'    => __( 'General', 'autoclose' ),
-			'comments'   => __( 'Comments', 'autoclose' ),
-			'pingtracks' => __( 'Pingbacks/Trackbacks', 'autoclose' ),
-			'revisions'  => __( 'Revisions', 'autoclose' ),
+			'general'     => esc_html__( 'General', 'add-to-all' ),
+			'third_party' => esc_html__( 'Third Party', 'add-to-all' ),
+			'head'        => esc_html__( 'Header', 'add-to-all' ),
+			'body'        => esc_html__( 'Body', 'add-to-all' ),
+			'footer'      => esc_html__( 'Footer', 'add-to-all' ),
+			'feed'        => esc_html__( 'Feed', 'add-to-all' ),
 		);
 
 		/**
 		 * Filter the array containing the settings' sections.
 		 *
-		 * @since 3.0.0
-		 * @param array $settings_sections Settings array.
+		 * @since 1.2.0
+		 *
+		 * @param array $settings_sections Settings array
 		 */
 		return apply_filters( self::$prefix . '_settings_sections', $settings_sections );
 	}
 
+
 	/**
-	 * Retrieve the array of plugin settings.
+	 * Retrieve the array of plugin settings
 	 *
-	 * @since 3.0.0
-	 * @return array Settings array.
+	 * @since 1.7.0
+	 *
+	 * @return array Settings array
 	 */
 	public static function get_registered_settings() {
-		$settings = array(
-			'general'    => self::settings_general(),
-			'comments'   => self::settings_comments(),
-			'pingtracks' => self::settings_pingtracks(),
-			'revisions'  => self::settings_revisions(),
-		);
+
+		$settings = array();
+		$sections = self::get_settings_sections();
+
+		foreach ( $sections as $section => $value ) {
+			$method_name = 'settings_' . $section;
+			if ( method_exists( __CLASS__, $method_name ) ) {
+				$settings[ $section ] = self::$method_name();
+			}
+		}
 
 		/**
-		 * Filters the settings array.
+		 * Filters the settings array
 		 *
-		 * @since 3.0.0
-		 * @param array $settings Settings array.
+		 * @since 1.2.0
+		 *
+		 * @param array $settings Settings array
 		 */
 		return apply_filters( self::$prefix . '_registered_settings', $settings );
 	}
 
 	/**
-	 * Returns the general settings.
+	 * Returns the Header settings.
 	 *
-	 * @since 3.0.0
-	 * @return array General settings.
+	 * @since 1.7.0
+	 *
+	 * @return array Header settings.
 	 */
 	public static function settings_general() {
+
 		$settings = array(
-			'cron_on'         => array(
-				'id'      => 'cron_on',
-				'name'    => esc_html__( 'Activate scheduled closing', 'autoclose' ),
-				'desc'    => esc_html__( 'This creates a WordPress cron job using the schedule settings below. This cron job will execute the tasks to close comments, pingbacks/trackbacks or delete post revisions based on the settings from the other tabs.', 'autoclose' ),
+			'enable_snippets'        => array(
+				'id'      => 'enable_snippets',
+				'name'    => esc_html__( 'Enable Snippets Manager', 'add-to-all' ),
+				'desc'    => esc_html__( 'Disabling this will turn off the Snippets manager and any of the associated functionality. This will not delete any snippets data that was created before this was turned off.', 'add-to-all' ),
 				'type'    => 'checkbox',
-				'options' => false,
+				'default' => true,
 			),
-			'cron_range_desc' => array(
-				'id'   => 'cron_range_desc',
-				'name' => '<strong>' . esc_html__( 'Time to run closing', 'autoclose' ) . '</strong>',
-				'desc' => esc_html__( 'The next two options allow you to set the time to run the cron. The cron job will run now if the hour:min set below if before the current time. e.g. if the time now is 20:30 hours and you set the schedule to 9:00. Else it will run later today at the scheduled time.', 'autoclose' ),
-				'type' => 'descriptive_text',
+			'enable_external_css_js' => array(
+				'id'      => 'enable_external_css_js',
+				'name'    => esc_html__( 'Enable external CSS/JS files', 'add-to-all' ),
+				'desc'    => esc_html__( 'Save CSS and JS snippets as external minified files instead of inline output. Improves page load performance.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
 			),
-			'cron_hour'       => array(
-				'id'      => 'cron_hour',
-				'name'    => esc_html__( 'Hour', 'autoclose' ),
-				'desc'    => '',
-				'type'    => 'number',
-				'options' => '0',
-				'min'     => '0',
-				'max'     => '23',
-				'size'    => 'small',
+			'enable_combination'     => array(
+				'id'      => 'enable_combination',
+				'name'    => esc_html__( 'Enable file combination', 'add-to-all' ),
+				'desc'    => esc_html__( 'Combine all CSS/JS snippets into single files. Note: Conditions are ignored for combined files.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
 			),
-			'cron_min'        => array(
-				'id'      => 'cron_min',
-				'name'    => esc_html__( 'Minute', 'autoclose' ),
-				'desc'    => '',
-				'type'    => 'number',
-				'options' => '0',
-				'min'     => '0',
-				'max'     => '59',
-				'size'    => 'small',
-			),
-			'cron_recurrence' => array(
-				'id'      => 'cron_recurrence',
-				'name'    => esc_html__( 'Run maintenance', 'autoclose' ),
-				'desc'    => '',
-				'type'    => 'radio',
-				'default' => 'daily',
-				'options' => array(
-					'daily'       => esc_html__( 'Daily', 'autoclose' ),
-					'weekly'      => esc_html__( 'Weekly', 'autoclose' ),
-					'fortnightly' => esc_html__( 'Fortnightly', 'autoclose' ),
-					'monthly'     => esc_html__( 'Monthly', 'autoclose' ),
-				),
+			'snippet_priority'       => array(
+				'id'      => 'snippet_priority',
+				'name'    => esc_html__( 'Snippet content priority', 'add-to-all' ),
+				'desc'    => esc_html__( 'Priority of the snippet content. Lower number means all snippets are added earlier relative to other content. Number below 10 is not recommended. At the next level, priority of each snippet is independently set from the Edit Snippets screen.', 'add-to-all' ),
+				'type'    => 'text',
+				'default' => 999,
 			),
 		);
 
 		/**
-		 * Filters the general settings array.
+		 * Filters the Header settings array
 		 *
-		 * @since 3.0.0
-		 * @param array $settings General settings array.
+		 * @since 1.7.0
+		 *
+		 * @param array $settings Header Settings array
 		 */
 		return apply_filters( self::$prefix . '_settings_general', $settings );
 	}
 
 	/**
-	 * Returns the comments settings.
+	 * Returns the Third party settings.
 	 *
-	 * @since 3.0.0
-	 * @return array Comments settings.
+	 * @since 1.5.0
+	 *
+	 * @return array Third party settings.
 	 */
-	public static function settings_comments() {
+	public static function settings_third_party() {
+
 		$settings = array(
-			'close_comment'      => array(
-				'id'      => 'close_comment',
-				'name'    => esc_html__( 'Close comments', 'autoclose' ),
-				'desc'    => esc_html__( 'Enable to close comments - used for the automatic schedule as well as one time runs under the Tools tab.', 'autoclose' ),
-				'type'    => 'checkbox',
-				'options' => false,
+			'statcounter_header'           => array(
+				'id'   => 'statcounter_header',
+				'name' => '<h3>' . esc_html__( 'StatCounter', 'add-to-all' ) . '</h3>',
+				'desc' => '',
+				'type' => 'header',
 			),
-			'comment_post_types' => array(
-				'id'      => 'comment_post_types',
-				'name'    => esc_html__( 'Post types to include', 'autoclose' ),
-				'desc'    => esc_html__( 'At least one option should be selected above. Select which post types on which you want comments closed.', 'autoclose' ),
-				'type'    => 'posttypes',
-				'options' => 'post',
+			'sc_project'                   => array(
+				'id'      => 'sc_project',
+				'name'    => esc_html__( 'Project ID', 'add-to-all' ),
+				'desc'    => esc_html__( 'This is the value of sc_project in your StatCounter code.', 'add-to-all' ),
+				'type'    => 'text',
+				'default' => '',
 			),
-			'comment_age'        => array(
-				'id'      => 'comment_age',
-				'name'    => esc_html__( 'Close comments on posts/pages older than', 'autoclose' ),
-				'desc'    => esc_html__( 'Comments that are older than the above number, in days, will be closed automatically if the schedule is enabled', 'autoclose' ),
-				'type'    => 'number',
-				'options' => '90',
+			'sc_security'                  => array(
+				'id'      => 'sc_security',
+				'name'    => esc_html__( 'Security ID', 'add-to-all' ),
+				'desc'    => esc_html__( 'This is the value of sc_security in your StatCounter code.', 'add-to-all' ),
+				'type'    => 'text',
+				'default' => '',
 			),
-			'comment_pids'       => array(
-				'id'      => 'comment_pids',
-				'name'    => esc_html__( 'Keep comments on these posts/pages open', 'autoclose' ),
-				'desc'    => esc_html__( 'Comma-separated list of post, page or custom post type IDs. e.g. 188,320,500', 'autoclose' ),
-				'type'    => 'numbercsv',
-				'options' => '',
-				'size'    => 'large',
+			'google_analytics_header'      => array(
+				'id'   => 'google_analytics_header',
+				'name' => '<h3>' . esc_html__( 'Google Analytics', 'add-to-all' ) . '</h3>',
+				'desc' => '',
+				'type' => 'header',
+			),
+			'ga_uacct'                     => array(
+				'id'      => 'ga_uacct',
+				'name'    => esc_html__( 'Tracking ID', 'add-to-all' ),
+				/* translators: 1: Google Tag ID link. */
+				'desc'    => sprintf( esc_html__( 'Find your %s', 'add-to-all' ), '<a href="https://www.google.com/webmasters/verification/verification" target="_blank">' . esc_html__( 'Google Tag ID', 'add-to-all' ) . '</a>' ),
+				'type'    => 'text',
+				'default' => '',
+			),
+			'verification_header'          => array(
+				'id'   => 'verification_header',
+				'name' => '<h3>' . esc_html__( 'Site verification', 'add-to-all' ) . '</h3>',
+				'desc' => '',
+				'type' => 'header',
+			),
+			'google_verification'          => array(
+				'id'      => 'google_verification',
+				'name'    => esc_html__( 'Google', 'add-to-all' ),
+				/* translators: 1: Google verification details page. */
+				'desc'    => sprintf( esc_html__( 'Value of the content portion of the HTML tag method on the %s', 'add-to-all' ), '<a href="https://www.google.com/webmasters/verification/verification" target="_blank">' . esc_html__( 'verification details page', 'add-to-all' ) . '</a>' ),
+				'type'    => 'text',
+				'default' => '',
+			),
+			'bing_verification'            => array(
+				'id'      => 'bing_verification',
+				'name'    => esc_html__( 'Bing', 'add-to-all' ),
+				/* translators: 1: Bing verification details page. */
+				'desc'    => sprintf( esc_html__( 'Value of the content portion of the HTML tag method on the %s', 'add-to-all' ), '<a href="https://www.bing.com/webmaster/" target="_blank">' . esc_html__( 'verification details page', 'add-to-all' ) . '</a>' ),
+				'type'    => 'text',
+				'default' => '',
+			),
+			'facebook_domain_verification' => array(
+				'id'      => 'facebook_domain_verification',
+				'name'    => esc_html__( 'Meta', 'add-to-all' ),
+				/* translators: 1: Meta tag details page. */
+				'desc'    => sprintf( esc_html__( 'Value of the content portion of the Meta tag method. Read how to verify your domain in the %s', 'add-to-all' ), '<a href="https://www.facebook.com/business/help/321167023127050" target="_blank">' . esc_html__( 'Meta Business Help Centre', 'add-to-all' ) . '</a>' ),
+				'type'    => 'text',
+				'default' => '',
+			),
+			'pinterest_verification'       => array(
+				'id'      => 'pinterest_verification',
+				'name'    => esc_html__( 'Pinterest', 'add-to-all' ),
+				/* translators: 1: Pinterest meta tag details page. */
+				'desc'    => sprintf( esc_html__( 'Read how to get the Meta Tag from the %s', 'add-to-all' ), '<a href="https://help.pinterest.com/en/articles/confirm-your-website" target="_blank">' . esc_html__( 'Pinterest help page', 'add-to-all' ) . '</a>' ),
+				'type'    => 'text',
+				'default' => '',
 			),
 		);
 
 		/**
-		 * Filters the comments settings array.
+		 * Filters the Third party settings array
 		 *
-		 * @since 3.0.0
-		 * @param array $settings Comments settings array.
+		 * @since 1.5.0
+		 *
+		 * @param array $settings Third party Settings array
 		 */
-		return apply_filters( self::$prefix . '_settings_comments', $settings );
+		return apply_filters( self::$prefix . '_settings_third_party', $settings );
 	}
 
 	/**
-	 * Returns the pingbacks/trackbacks settings.
+	 * Returns the Header settings.
 	 *
-	 * @since 3.0.0
-	 * @return array Pingbacks/trackbacks settings.
-	 */
-	public static function settings_pingtracks() {
-		$settings = array(
-			'close_pbtb'       => array(
-				'id'      => 'close_pbtb',
-				'name'    => esc_html__( 'Close Pingbacks/Trackbacks', 'autoclose' ),
-				'desc'    => esc_html__( 'Enable to close pingbacks and trackbacks - used for the automatic schedule as well as one time runs under the Tools tab.', 'autoclose' ),
-				'type'    => 'checkbox',
-				'options' => false,
-			),
-			'pbtb_post_types'  => array(
-				'id'      => 'pbtb_post_types',
-				'name'    => esc_html__( 'Post types to include', 'autoclose' ),
-				'desc'    => esc_html__( 'At least one option should be selected above. Select which post types on which you want pingbacks/trackbacks closed.', 'autoclose' ),
-				'type'    => 'posttypes',
-				'options' => 'post',
-			),
-			'pbtb_age'         => array(
-				'id'      => 'pbtb_age',
-				'name'    => esc_html__( 'Close pingbacks/trackbacks on posts/pages older than', 'autoclose' ),
-				'desc'    => esc_html__( 'Pingbacks/Trackbacks that are older than the above number, in days, will be closed automatically if the schedule is enabled', 'autoclose' ),
-				'type'    => 'number',
-				'options' => '90',
-			),
-			'pbtb_pids'        => array(
-				'id'      => 'pbtb_pids',
-				'name'    => esc_html__( 'Keep pingbacks/trackbacks on these posts/pages open', 'autoclose' ),
-				'desc'    => esc_html__( 'Comma-separated list of post, page or custom post type IDs. e.g. 188,320,500', 'autoclose' ),
-				'type'    => 'numbercsv',
-				'options' => '',
-				'size'    => 'large',
-			),
-			'block_self_pings' => array(
-				'id'      => 'block_self_pings',
-				'name'    => esc_html__( 'Block Self-Pings', 'autoclose' ),
-				'desc'    => esc_html__( 'Enable to block self-pings (pings to your own site).', 'autoclose' ),
-				'type'    => 'checkbox',
-				'options' => false,
-			),
-			'block_ping_urls'  => array(
-				'id'      => 'block_ping_urls',
-				'name'    => esc_html__( 'Block Ping URLs', 'autoclose' ),
-				'desc'    => esc_html__( 'Enter one URL per line. Pings to any of these URLs will be blocked in addition to self-pings.', 'autoclose' ),
-				'type'    => 'textarea',
-				'options' => '',
-				'size'    => 'large',
-			),
-		);
-
-		/**
-		 * Filters the pingbacks/trackbacks settings array.
-		 *
-		 * @since 3.0.0
-		 * @param array $settings Pingbacks/trackbacks settings array.
-		 */
-		return apply_filters( self::$prefix . '_settings_pingtracks', $settings );
-	}
-
-	/**
-	 * Returns the revisions settings.
+	 * @since 1.5.0
 	 *
-	 * @since 3.0.0
-	 * @return array Revisions settings.
+	 * @return array Header settings.
 	 */
-	public static function settings_revisions() {
+	public static function settings_head() {
+
 		$settings = array(
-			'delete_revisions'    => array(
-				'id'      => 'delete_revisions',
-				'name'    => esc_html__( 'Delete post revisions', 'autoclose' ),
-				'desc'    => esc_html__( 'The WordPress revisions system stores a record of each saved draft or published update. This can gather up a lot of overhead in the long run. Use this option to delete old post revisions.', 'autoclose' ),
-				'type'    => 'checkbox',
-				'options' => false,
+			'head_css'        => array(
+				'id'          => 'head_css',
+				'name'        => esc_html__( 'Custom CSS', 'add-to-all' ),
+				'desc'        => esc_html__( 'Add the CSS code without the <style></style> tags.', 'add-to-all' ),
+				'type'        => 'css',
+				'default'     => '',
+				'field_class' => 'codemirror_css',
 			),
-			'revision_post_types' => array(
-				'id'   => 'revision_post_types',
-				'name' => '<strong>' . esc_html__( 'Number of revisions', 'autoclose' ) . '</strong>',
+			'head_other_html' => array(
+				'id'          => 'head_other_html',
+				'name'        => esc_html__( 'HTML to add to the header', 'add-to-all' ),
 				/* translators: 1: Code. */
-				'desc' => sprintf( esc_html__( 'Limit the number of revisions that WordPress stores in the database for each of the post types below. %1$s -2: ignore setting from this plugin, %1$s -1: store every revision, %1$s 0: do not store any revisions, %1$s >0: store that many revisions per post. Old revisions are automatically deleted.', 'autoclose' ), '<br />' ),
-				'type' => 'descriptive_text',
+				'desc'        => sprintf( esc_html__( 'The code entered here is added to %1$s. Please ensure that you enter valid HTML or JavaScript.', 'add-to-all' ), '<code>wp_head()</code>' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
 			),
 		);
 
-		// Create array of settings for post types that support revisions.
-		$revisions_instance  = new \WebberZone\AutoClose\Features\Revisions();
-		$revision_post_types = $revisions_instance->get_revision_post_types();
+		/**
+		 * Filters the Header settings array
+		 *
+		 * @since 1.5.0
+		 *
+		 * @param array $settings Header Settings array
+		 */
+		return apply_filters( self::$prefix . '_settings_head', $settings );
+	}
 
-		foreach ( $revision_post_types as $post_type => $name ) {
-			$settings[ 'revision_' . $post_type ] = array(
-				'id'      => 'revision_' . $post_type,
-				'name'    => $name,
+	/**
+	 * Returns the Content settings.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @return array Content settings.
+	 */
+	public static function settings_body() {
+
+		$settings = array(
+			'wp_body_open_header'            => array(
+				'id'   => 'wp_body_open_header',
+				'name' => '<h3>' . esc_html__( 'Opening Body Tag', 'add-to-all' ) . '</h3>',
+				'desc' => '',
+				'type' => 'header',
+			),
+			'wp_body_open'                   => array(
+				'id'          => 'wp_body_open',
+				'name'        => esc_html__( 'HTML to add to wp_body_open()', 'add-to-all' ),
+				'desc'        => esc_html__( 'wp_body_open() is called after the opening body tag. Please ensure that you enter valid HTML or JavaScript. This might not work if your theme does not include the tag.', 'add-to-all' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
+			),
+			'content_header'                 => array(
+				'id'   => 'content_header',
+				'name' => '<h3>' . esc_html__( 'Content settings', 'add-to-all' ) . '</h3>',
+				'desc' => '',
+				'type' => 'header',
+			),
+			'content_filter_priority'        => array(
+				'id'      => 'content_filter_priority',
+				'name'    => esc_html__( 'Content filter priority', 'add-to-all' ),
+				'desc'    => esc_html__( 'A higher number will cause the WebberZone Snippetz output to be processed after other filters. Number below 10 is not recommended.', 'add-to-all' ),
+				'type'    => 'text',
+				'default' => 999,
+			),
+			'exclude_on_post_ids'            => array(
+				'id'      => 'exclude_on_post_ids',
+				'name'    => esc_html__( 'Exclude display on these post IDs', 'add-to-all' ),
+				'desc'    => esc_html__( 'Comma-separated list of post or page IDs to exclude displaying the above content. e.g. 188,320,500', 'add-to-all' ),
+				'type'    => 'postids',
+				'default' => '',
+			),
+			'content_process_shortcode'      => array(
+				'id'      => 'content_process_shortcode',
+				'name'    => esc_html__( 'Process shortcodes in content', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this box to execute any shortcodes that you enter in the options below.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'content_header_all'             => array(
+				'id'   => 'content_header_all',
+				'name' => '<h3>' . esc_html__( 'Home and other views', 'add-to-all' ) . '</h3>',
+				'desc' => esc_html__( 'Displays when viewing single posts, home, category, tag and other archives.', 'add-to-all' ),
+				'type' => 'header',
+			),
+			'content_add_html_before'        => array(
+				'id'      => 'content_add_html_before',
+				'name'    => esc_html__( 'Add HTML before content?', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this to add the HTML below before the content of your post.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'content_html_before'            => array(
+				'id'          => 'content_html_before',
+				'name'        => esc_html__( 'HTML to add before the content', 'add-to-all' ),
+				'desc'        => esc_html__( 'Enter valid HTML or JavaScript (wrapped in script tags). No PHP allowed.', 'add-to-all' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
+			),
+			'content_add_html_after'         => array(
+				'id'      => 'content_add_html_after',
+				'name'    => esc_html__( 'Add HTML after content?', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this to add the HTML below before the content of your post.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'content_html_after'             => array(
+				'id'          => 'content_html_after',
+				'name'        => esc_html__( 'HTML to add after the content', 'add-to-all' ),
+				'desc'        => esc_html__( 'Enter valid HTML or JavaScript (wrapped in script tags). No PHP allowed.', 'add-to-all' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
+			),
+			'content_header_single'          => array(
+				'id'   => 'content_header_single',
+				'name' => '<h3>' . esc_html__( 'Single posts views', 'add-to-all' ) . '</h3>',
+				'desc' => esc_html__( 'Displays when viewing single views including posts, pages, custom-post-types.', 'add-to-all' ),
+				'type' => 'header',
+			),
+			'content_add_html_before_single' => array(
+				'id'      => 'content_add_html_before_single',
+				'name'    => esc_html__( 'Add HTML before content?', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this to add the HTML below before the content of your post.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'content_html_before_single'     => array(
+				'id'          => 'content_html_before_single',
+				'name'        => esc_html__( 'HTML to add before the content', 'add-to-all' ),
+				'desc'        => esc_html__( 'Enter valid HTML or JavaScript (wrapped in script tags). No PHP allowed.', 'add-to-all' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
+			),
+			'content_add_html_after_single'  => array(
+				'id'      => 'content_add_html_after_single',
+				'name'    => esc_html__( 'Add HTML after content?', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this to add the HTML below before the content of your post.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'content_html_after_single'      => array(
+				'id'          => 'content_html_after_single',
+				'name'        => esc_html__( 'HTML to add after the content', 'add-to-all' ),
+				'desc'        => esc_html__( 'Enter valid HTML or JavaScript (wrapped in script tags). No PHP allowed.', 'add-to-all' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
+			),
+			'content_header_post'            => array(
+				'id'   => 'content_header_post',
+				'name' => '<h3>' . esc_html__( 'Post only views', 'add-to-all' ) . '</h3>',
+				'desc' => esc_html__( 'Displays only on posts', 'add-to-all' ),
+				'type' => 'header',
+			),
+			'content_add_html_before_post'   => array(
+				'id'      => 'content_add_html_before_post',
+				'name'    => esc_html__( 'Add HTML before content?', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this to add the HTML below before the content of your post.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'content_html_before_post'       => array(
+				'id'          => 'content_html_before_post',
+				'name'        => esc_html__( 'HTML to add before the content', 'add-to-all' ),
+				'desc'        => esc_html__( 'Enter valid HTML or JavaScript (wrapped in script tags). No PHP allowed.', 'add-to-all' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
+			),
+			'content_add_html_after_post'    => array(
+				'id'      => 'content_add_html_after_post',
+				'name'    => esc_html__( 'Add HTML after content?', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this to add the HTML below before the content of your post.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'content_html_after_post'        => array(
+				'id'          => 'content_html_after_post',
+				'name'        => esc_html__( 'HTML to add after the content', 'add-to-all' ),
+				'desc'        => esc_html__( 'Enter valid HTML or JavaScript (wrapped in script tags). No PHP allowed.', 'add-to-all' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
+			),
+			'content_header_page'            => array(
+				'id'   => 'content_header_page',
+				'name' => '<h3>' . esc_html__( 'Page only views', 'add-to-all' ) . '</h3>',
+				'desc' => esc_html__( 'Displays only on pages', 'add-to-all' ),
+				'type' => 'header',
+			),
+			'content_add_html_before_page'   => array(
+				'id'      => 'content_add_html_before_page',
+				'name'    => esc_html__( 'Add HTML before content?', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this to add the HTML below before the content of your page.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'content_html_before_page'       => array(
+				'id'          => 'content_html_before_page',
+				'name'        => esc_html__( 'HTML to add before the content', 'add-to-all' ),
+				'desc'        => esc_html__( 'Enter valid HTML or JavaScript (wrapped in script tags). No PHP allowed.', 'add-to-all' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
+			),
+			'content_add_html_after_page'    => array(
+				'id'      => 'content_add_html_after_page',
+				'name'    => esc_html__( 'Add HTML after content?', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this to add the HTML below before the content of your page.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'content_html_after_page'        => array(
+				'id'          => 'content_html_after_page',
+				'name'        => esc_html__( 'HTML to add after the content', 'add-to-all' ),
+				'desc'        => esc_html__( 'Enter valid HTML or JavaScript (wrapped in script tags). No PHP allowed.', 'add-to-all' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
+			),
+		);
+
+		/**
+		 * Filters the Content settings array
+		 *
+		 * @since 1.5.0
+		 *
+		 * @param array $settings Content Settings array
+		 */
+		return apply_filters( self::$prefix . '_settings_body', $settings );
+	}
+
+	/**
+	 * Returns the Footer settings.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @return array Footer settings.
+	 */
+	public static function settings_footer() {
+
+		$settings = array(
+			'footer_process_shortcode' => array(
+				'id'      => 'footer_process_shortcode',
+				'name'    => esc_html__( 'Process shortcodes in footer', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this box to execute any shortcodes that you enter in the option below.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'footer_other_html'        => array(
+				'id'          => 'footer_other_html',
+				'name'        => esc_html__( 'HTML to add to the footer', 'add-to-all' ),
+				/* translators: 1: Code. */
+				'desc'        => sprintf( esc_html__( 'The code entered here is added to %1$s. Please ensure that you enter valid HTML or JavaScript.', 'add-to-all' ), '<code>wp_footer()</code>' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
+			),
+		);
+
+		/**
+		 * Filters the Footer settings array
+		 *
+		 * @since 1.5.0
+		 *
+		 * @param array $settings Footer Settings array
+		 */
+		return apply_filters( self::$prefix . '_settings_footer', $settings );
+	}
+
+	/**
+	 * Returns the Feed settings.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @return array Feed settings.
+	 */
+	public static function settings_feed() {
+
+		$settings = array(
+			'feed_add_copyright'     => array(
+				'id'      => 'feed_add_copyright',
+				'name'    => esc_html__( 'Add copyright notice?', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this to add the below copyright notice to your feed.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => true,
+			),
+			'feed_copyrightnotice'   => array(
+				'id'          => 'feed_copyrightnotice',
+				'name'        => esc_html__( 'Coyright text', 'add-to-all' ),
+				/* translators: No strings here. */
+				'desc'        => esc_html__( 'Enter valid HTML only. This copyright notice is added as the last item of your feed. You can also use %year% for the year or %first_year% for the year of the first post,', 'add-to-all' ),
+				'type'        => 'html',
+				'default'     => self::get_copyright_text(),
+				'field_class' => 'codemirror_html',
+			),
+			'feed_add_title'         => array(
+				'id'      => 'feed_add_title',
+				'name'    => esc_html__( 'Add post title?', 'add-to-all' ),
+				'desc'    => esc_html__( 'Add a link to the title of the post in the feed.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => true,
+			),
+			'feed_title_text'        => array(
+				'id'      => 'feed_title_text',
+				'name'    => esc_html__( 'Title text', 'add-to-all' ),
+				/* translators: No strings here. */
+				'desc'    => esc_html__( 'The above text will be added to the feed. You can use %title% to add a link to the post, %date% and %time% to display the date and time of the post respectively.', 'add-to-all' ),
+				'type'    => 'textarea',
+				/* translators: No strings here. */
+				'default' => esc_html__( '%title% was first posted on %date% at %time%.', 'add-to-all' ),
+			),
+			'feed_process_shortcode' => array(
+				'id'      => 'feed_process_shortcode',
+				'name'    => esc_html__( 'Process shortcodes in feed', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this box to execute any shortcodes that you enter in the options below.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'feed_add_html_before'   => array(
+				'id'      => 'feed_add_html_before',
+				'name'    => esc_html__( 'Add HTML before content?', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this to add the HTML below before the content of your post.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'feed_html_before'       => array(
+				'id'          => 'feed_html_before',
+				'name'        => esc_html__( 'HTML to add before the content', 'add-to-all' ),
+				'desc'        => esc_html__( 'Enter valid HTML or JavaScript (wrapped in script tags). No PHP allowed.', 'add-to-all' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
+			),
+			'feed_add_html_after'    => array(
+				'id'      => 'feed_add_html_after',
+				'name'    => esc_html__( 'Add HTML after content?', 'add-to-all' ),
+				'desc'    => esc_html__( 'Check this to add the HTML below before the content of your post.', 'add-to-all' ),
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+			'feed_html_after'        => array(
+				'id'          => 'feed_html_after',
+				'name'        => esc_html__( 'HTML to add after the content', 'add-to-all' ),
+				'desc'        => esc_html__( 'Enter valid HTML or JavaScript (wrapped in script tags). No PHP allowed.', 'add-to-all' ),
+				'type'        => 'html',
+				'default'     => '',
+				'field_class' => 'codemirror_html',
+			),
+			'add_credit'             => array(
+				'id'      => 'add_credit',
+				'name'    => esc_html__( 'Add a link to "WebberZone Snippetz" plugin page', 'add-to-all' ),
 				'desc'    => '',
-				'type'    => 'number',
-				'options' => -2,
-				'min'     => -2,
-				'size'    => 'small',
+				'type'    => 'checkbox',
+				'default' => false,
+			),
+		);
+
+		/**
+		 * Filters the Feed settings array
+		 *
+		 * @since 1.5.0
+		 *
+		 * @param array $settings Feed Settings array
+		 */
+		return apply_filters( self::$prefix . '_settings_feed', $settings );
+	}
+
+	/**
+	 * Copyright notice text.
+	 *
+	 * @since 1.7.0
+	 * @return string Copyright notice
+	 */
+	public static function get_copyright_text() {
+
+		$copyrightnotice  = '&copy;' . gmdate( 'Y' ) . ' &quot;<a href="' . get_option( 'home' ) . '">' . get_option( 'blogname' ) . '</a>&quot;. ';
+		$copyrightnotice .= esc_html__( 'Use of this feed is for personal non-commercial use only. If you are not reading this article in your feed reader, then the site is guilty of copyright infringement. Please contact me at ', 'add-to-all' );
+		$copyrightnotice .= '<!--email_off-->' . get_option( 'admin_email' ) . '<!--/email_off-->';
+
+		/**
+		 * Copyright notice text.
+		 *
+		 * @since 1.2.0
+		 * @param string $copyrightnotice Copyright notice
+		 */
+		return apply_filters( self::$prefix . '_copyright_text', $copyrightnotice );
+	}
+
+
+	/**
+	 * Upgrade v1.1.0 settings to v1.2.0.
+	 *
+	 * @since 1.7.0
+	 * @return array Settings array
+	 */
+	public function get_upgrade_settings() {
+		$old_settings = get_option( 'ald_ata_settings' );
+
+		if ( empty( $old_settings ) ) {
+			return array();
+		} else {
+			$map = array(
+				'add_credit'                     => 'addcredit',
+
+				// Content options.
+				'content_html_before'            => 'content_htmlbefore',
+				'content_html_after'             => 'content_htmlafter',
+				'content_add_html_before'        => 'content_addhtmlbefore',
+				'content_add_html_after'         => 'content_addhtmlafter',
+				'content_html_before_single'     => 'content_htmlbeforeS',
+				'content_html_after_single'      => 'content_htmlafterS',
+				'content_add_html_before_single' => 'content_addhtmlbeforeS',
+				'content_add_html_after_single'  => 'content_addhtmlafterS',
+				'content_filter_priority'        => 'content_filter_priority',
+
+				// Feed options.
+				'feed_html_before'               => 'feed_htmlbefore',
+				'feed_html_after'                => 'feed_htmlafter',
+				'feed_add_html_before'           => 'feed_addhtmlbefore',
+				'feed_add_html_after'            => 'feed_addhtmlafter',
+				'feed_copyrightnotice'           => 'feed_copyrightnotice',
+				'feed_add_title'                 => 'feed_addtitle',
+				'feed_title_text'                => 'feed_titletext',
+				'feed_add_copyright'             => 'feed_addcopyright',
+
+				// 3rd party options.
+				'sc_project'                     => 'tp_sc_project',
+				'sc_security'                    => 'tp_sc_security',
+				'ga_uacct'                       => 'tp_ga_uacct',
+				'tynt_id'                        => 'tp_tynt_id',
+
+				// Footer options.
+				'footer_other_html'              => 'ft_other',
+
+				// Header options.
+				'head_css'                       => 'head_CSS',
+				'head_other_html'                => 'head_other',
 			);
+
+			foreach ( $map as $key => $value ) {
+				$settings[ $key ] = strval( $old_settings[ $value ] );
+			}
+
+			delete_option( 'ald_ata_settings' );
+
+			return $settings;
 		}
-
-		/**
-		 * Filters the revisions settings array.
-		 *
-		 * @since 3.0.0
-		 * @param array $settings Revisions settings array.
-		 */
-		return apply_filters( self::$prefix . '_settings_revisions', $settings );
 	}
 
 	/**
-	 * Get the upgrade settings.
+	 * Adding WordPress plugin action links.
 	 *
-	 * @since 3.0.0
-	 * @return array Upgrade settings.
+	 * @since 1.7.0
+	 *
+	 * @param array $links Array of links.
+	 * @return array
 	 */
-	public static function get_upgrade_settings() {
-		$settings = array();
+	public function plugin_actions_links( $links ) {
 
-		/**
-		 * Filters the upgrade settings array.
-		 *
-		 * @since 3.0.0
-		 * @param array $settings Upgrade settings array.
-		 */
-		return apply_filters( self::$prefix . '_upgrade_settings', $settings );
+		$location = $this->get_settings_location();
+		return array_merge(
+			array(
+				'settings' => '<a href="' . $location . '">' . esc_html__( 'Settings', 'add-to-all' ) . '</a>',
+			),
+			$links
+		);
 	}
 
 	/**
-	 * Get the help sidebar content.
+	 * Add meta links on Plugins page.
 	 *
-	 * @since 3.0.0
-	 * @return string Help sidebar content.
+	 * @since 1.7.0
+	 *
+	 * @param array  $links Array of Links.
+	 * @param string $file Current file.
+	 * @return array
 	 */
-	public static function get_help_sidebar() {
+	public function plugin_row_meta( $links, $file ) {
+
+		if ( false !== strpos( $file, 'add-to-all.php' ) ) {
+			$new_links = array(
+				'support'    => '<a href = "https://wordpress.org/support/plugin/add-to-all">' . esc_html__( 'Support', 'add-to-all' ) . '</a>',
+				'donate'     => '<a href = "https://ajaydsouza.com/donate/">' . esc_html__( 'Donate', 'add-to-all' ) . '</a>',
+				'contribute' => '<a href = "https://github.com/WebberZone/add-to-all">' . esc_html__( 'Contribute', 'add-to-all' ) . '</a>',
+			);
+
+			$links = array_merge( $links, $new_links );
+		}
+		return $links;
+	}
+
+	/**
+	 * Get the help sidebar content to display on the plugin settings page.
+	 *
+	 * @since 1.8.0
+	 */
+	public function get_help_sidebar() {
+
 		$help_sidebar =
-			'<p><strong>' . __( 'For more information:', 'autoclose' ) . '</strong></p>' .
-			'<p><a href="https://webberzone.com/plugins/autoclose/" target="_blank">' . __( 'AutoClose Homepage', 'autoclose' ) . '</a></p>' .
-			'<p><a href="https://wordpress.org/plugins/autoclose/faq/" target="_blank">' . __( 'FAQ', 'autoclose' ) . '</a></p>' .
-			'<p><a href="https://wordpress.org/support/plugin/autoclose/" target="_blank">' . __( 'Support Forum', 'autoclose' ) . '</a></p>';
+		/* translators: 1: Plugin support site link. */
+		'<p>' . sprintf( __( 'For more information or how to get support visit the <a href="%s">support site</a>.', 'add-to-all' ), esc_url( 'https://webberzone.com/support/' ) ) . '</p>' .
+		/* translators: 1: WordPress.org support forums link. */
+			'<p>' . sprintf( __( 'Support queries should be posted in the <a href="%s">WordPress.org support forums</a>.', 'add-to-all' ), esc_url( 'https://wordpress.org/support/plugin/add-to-all' ) ) . '</p>' .
+		'<p>' . sprintf(
+			/* translators: 1: Github issues link, 2: Github plugin page link. */
+			__( '<a href="%1$s">Post an issue</a> on <a href="%2$s">GitHub</a> (bug reports only).', 'add-to-all' ),
+			esc_url( 'https://github.com/ajaydsouza/add-to-all/issues' ),
+			esc_url( 'https://github.com/ajaydsouza/add-to-all' )
+		) . '</p>';
 
 		/**
-		 * Filters the help sidebar content.
+		 * Filter to modify the help sidebar content.
 		 *
-		 * @since 3.0.0
+		 * @since 1.8.0
+		 *
 		 * @param string $help_sidebar Help sidebar content.
 		 */
-		return apply_filters( self::$prefix . '_help_sidebar', $help_sidebar );
+		return apply_filters( self::$prefix . '_settings_help', $help_sidebar );
 	}
 
 	/**
-	 * Get the help tabs.
+	 * Get the help tabs to display on the plugin settings page.
 	 *
-	 * @since 3.0.0
-	 * @return array Help tabs.
+	 * @since 1.8.0
 	 */
-	public static function get_help_tabs() {
+	public function get_help_tabs() {
+
 		$help_tabs = array(
 			array(
-				'id'      => 'acc-settings-general',
-				'title'   => __( 'General', 'autoclose' ),
-				'content' => '<p>' . __( 'This screen provides the basic settings for configuring AutoClose.', 'autoclose' ) . '</p>' .
-					'<p>' . __( 'Enable the scheduler option to autoclose comments and/or pingbacks/trackbacks as per the options set in the Comments and Pingbacks/Trackbacks tabs.', 'autoclose' ) . '</p>',
+				'id'      => 'ata-settings-general-help',
+				'title'   => esc_html__( 'General', 'add-to-all' ),
+				'content' =>
+					'<p><strong>' . esc_html__( 'This screen provides general settings. Enable/disable the Snippets Manager and set the global priority of snippets.', 'add-to-all' ) . '</strong></p>' .
+					'<p>' . esc_html__( 'You must click the Save Changes button at the bottom of the screen for new settings to take effect.', 'add-to-all' ) . '</p>',
 			),
 			array(
-				'id'      => 'acc-settings-comments',
-				'title'   => __( 'Comments', 'autoclose' ),
-				'content' => '<p>' . __( 'This screen provides settings to automatically close comments.', 'autoclose' ) . '</p>' .
-					'<p>' . __( 'Enable the Close comments option to close comments on posts as per the schedule in the General tab. You can select the post types on which you want to close comments and the age of the post in days.', 'autoclose' ) . '</p>' .
-					'<p>' . __( 'If you want to keep comments on certain posts open, enter a comma-separated list of post IDs in the field provided.', 'autoclose' ) . '</p>',
+				'id'      => 'ata-settings-third-party-help',
+				'title'   => esc_html__( 'Third Party', 'add-to-all' ),
+				'content' =>
+					'<p><strong>' . esc_html__( 'This screen provides the settings for configuring the integration with third party scripts.', 'add-to-all' ) . '</strong></p>' .
+					'<p>' . sprintf(
+						/* translators: 1: Google Analystics help article. */
+						esc_html__( 'Google Analytics tracking can be found by visiting this %s', 'add-to-all' ),
+						'<a href="https://support.google.com/analytics/topic/9303319" target="_blank">' . esc_html__( 'article', 'add-to-all' ) . '</a>.'
+					) .
+					'</p>' .
+					'<p>' . esc_html__( 'You must click the Save Changes button at the bottom of the screen for new settings to take effect.', 'add-to-all' ) . '</p>',
 			),
 			array(
-				'id'      => 'acc-settings-pingtracks',
-				'title'   => __( 'Pingbacks/Trackbacks', 'autoclose' ),
-				'content' => '<p>' . __( 'This screen provides settings to automatically close pingbacks and trackbacks.', 'autoclose' ) . '</p>' .
-					'<p>' . __( 'Enable the Close pingbacks/trackbacks option to close pingbacks and trackbacks on posts as per the schedule in the General tab. You can select the post types on which you want to close pingbacks/trackbacks and the age of the post in days.', 'autoclose' ) . '</p>' .
-					'<p>' . __( 'If you want to keep pingbacks/trackbacks on certain posts open, enter a comma-separated list of post IDs in the field provided.', 'autoclose' ) . '</p>' .
-					'<p>' . __( 'Additionally, you can choose to delete all pingbacks and trackbacks when the scheduled maintenance runs.', 'autoclose' ) . '</p>',
+				'id'      => 'ata-settings-header-help',
+				'title'   => esc_html__( 'Header', 'add-to-all' ),
+				'content' =>
+					'<p><strong>' . esc_html__( 'This screen allows you to control what content is added to the header of your site.', 'add-to-all' ) . '</strong></p>' .
+					'<p>' . esc_html__( 'You can add custom CSS or HTML code. Useful for adding meta tags for site verification, etc.', 'add-to-all' ) . '</p>' .
+					'<p>' . esc_html__( 'You must click the Save Changes button at the bottom of the screen for new settings to take effect.', 'add-to-all' ) . '</p>',
 			),
 			array(
-				'id'      => 'acc-settings-revisions',
-				'title'   => __( 'Revisions', 'autoclose' ),
-				'content' => '<p>' . __( 'This screen provides settings to automatically delete post revisions.', 'autoclose' ) . '</p>' .
-					'<p>' . __( 'Enable the Delete post revisions option to delete post revisions when the scheduled maintenance runs.', 'autoclose' ) . '</p>' .
-					'<p>' . __( 'You can also set the number of revisions to keep for each post type. Set to 0 to delete all revisions.', 'autoclose' ) . '</p>',
+				'id'      => 'ata-settings-body-help',
+				'title'   => esc_html__( 'Body', 'add-to-all' ),
+				'content' =>
+					'<p><strong>' . esc_html__( 'This screen allows you to control what content is added to the content of posts, pages and custom post types.', 'add-to-all' ) . '</strong></p>' .
+					'<p>' . esc_html__( 'You can set the priority of the filter and choose if you want this to be displayed on either all content (including archives) or just single posts/pages.', 'add-to-all' ) . '</p>' .
+					'<p>' . esc_html__( 'You must click the Save Changes button at the bottom of the screen for new settings to take effect.', 'add-to-all' ) . '</p>',
+			),
+			array(
+				'id'      => 'ata-settings-footer-help',
+				'title'   => esc_html__( 'Footer', 'add-to-all' ),
+				'content' =>
+					'<p><strong>' . esc_html__( 'This screen allows you to control what content is added to the footer of your site.', 'add-to-all' ) . '</strong></p>' .
+					'<p>' . esc_html__( 'You can add custom HTML code. Useful for adding tracking code for analytics, etc.', 'add-to-all' ) . '</p>' .
+					'<p>' . esc_html__( 'You must click the Save Changes button at the bottom of the screen for new settings to take effect.', 'add-to-all' ) . '</p>',
+			),
+			array(
+				'id'      => 'ata-settings-feed-help',
+				'title'   => esc_html__( 'Feed', 'add-to-all' ),
+				'content' =>
+					'<p><strong>' . esc_html__( 'This screen allows you to control what content is added to the feed of your site.', 'add-to-all' ) . '</strong></p>' .
+					'<p>' . esc_html__( 'You can add copyright text, a link to the title and date of the post, and HTML before and after the content', 'add-to-all' ) . '</p>' .
+					'<p>' . esc_html__( 'You must click the Save Changes button at the bottom of the screen for new settings to take effect.', 'add-to-all' ) . '</p>',
 			),
 		);
 
 		/**
-		 * Filters the help tabs.
-		 *
-		 * @since 3.0.0
-		 * @param array $help_tabs Help tabs.
+		 * Filter to add more help tabs.
 		 */
 		return apply_filters( self::$prefix . '_help_tabs', $help_tabs );
 	}
 
 	/**
-	 * Add CSS to admin head.
+	 * Get admin footer text.
 	 *
-	 * @since 3.0.0
-	 */
-	public function admin_head() {
-		?>
-		<style type="text/css">
-			.wrap .acc-settings-section {
-				clear: both;
-				padding: 0 0 40px;
-			}
-			.wrap .acc-settings-section > div {
-				max-width: 1200px;
-			}
-			.wrap .acc-settings-section > h2 {
-				display: inline-block;
-				padding: 0;
-			}
-			.wrap .acc-settings-section > p {
-				margin-top: 0;
-			}
-			.wrap .acc-settings-section .postbox {
-				margin-bottom: 0;
-			}
-			.wrap .acc-settings-section .inside {
-				padding: 0 12px 12px;
-				margin-top: 10px;
-				margin-bottom: 0;
-			}
-		</style>
-		<?php
-	}
-
-	/**
-	 * Get the admin footer text.
-	 *
-	 * @return string Admin footer text.
+	 * @return string
 	 */
 	public function get_admin_footer_text() {
 		return sprintf(
 			/* translators: 1: Opening anchor tag with Plugin page link, 2: Closing anchor tag, 3: Opening anchor tag with review link. */
-			__( 'Thank you for using %1$sAutoClose%2$s! Please %3$srate us%2$s on %3$sWordPress.org%2$s', 'autoclose' ),
-			'<a href="https://webberzone.com/plugins/autoclose/" target="_blank">',
+			__( 'Thank you for using %1$sWebberZone Snippetz%2$s! Please %3$srate us%2$s on %3$sWordPress.org%2$s', 'add-to-all' ),
+			'<a href="https://webberzone.com/plugins/add-to-all/" target="_blank">',
 			'</a>',
-			'<a href="https://wordpress.org/support/plugin/autoclose/reviews/#new-post" target="_blank">'
+			'<a href="https://wordpress.org/support/plugin/add-to-all/reviews/#new-post" target="_blank">'
 		);
 	}
 
 	/**
-	 * Add a link to the Tools page from the settings page.
+	 * Modify settings when they are being saved.
 	 *
-	 * @since 3.0.0
+	 * @since 2.0.0
+	 *
+	 * @param  array $settings Settings array.
+	 * @return array Sanitized settings array.
 	 */
-	public static function settings_page_header() {
-		?>
-		<p>
-			<a class="button button-primary" style="color: #0A0A0A; background: #FFBD59; border: 1px solid #FFA500;" href="<?php echo esc_url( admin_url( 'tools.php?page=acc_tools_page' ) ); ?>">
-				<?php esc_html_e( 'Visit the Tools page', 'autoclose' ); ?>
-			</a>
-		</p>
-
-		<?php
+	public function change_settings_on_save( $settings ) {
+		return $settings;
 	}
 
 	/**
-	 * Change settings when saved.
+	 * Redirect to the correct settings page on save.
 	 *
-	 * @since 3.0.0
-	 *
-	 * @param array $settings Settings array.
-	 * @return array Filtered settings array.
+	 * @since 2.0.0
 	 */
-	public function change_settings_on_save( $settings ) {
-		// Sanitize cron hour and minute.
-		$settings['cron_hour'] = min( 23, absint( $settings['cron_hour'] ) );
-		$settings['cron_min']  = min( 59, absint( $settings['cron_min'] ) );
+	public function redirect_on_save() {
+		if ( isset( $_GET['page'] ) && $_GET['page'] === $this->menu_slug && isset( $_GET['settings-updated'] ) && true === (bool) $_GET['settings-updated'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		$cron = new \WebberZone\AutoClose\Utilities\Cron();
-		if ( ! empty( $settings['cron_on'] ) ) {
-			$cron->enable_run( $settings['cron_hour'], $settings['cron_min'], $settings['cron_recurrence'] );
+			$location = $this->get_settings_location();
+			wp_safe_redirect( $location );
+			exit;
+		}
+	}
+
+	/**
+	 * Get link of the Settings page.
+	 *
+	 * @since 2.0.1
+	 */
+	public function get_settings_location() {
+		if ( \WebberZone\Snippetz\Util\Helpers::is_snippets_enabled() ) {
+			$location = admin_url( "/edit.php?post_type=ata_snippets&page={$this->menu_slug}" );
 		} else {
-			$cron->disable_run();
+			$location = admin_url( "/options-general.php?page={$this->menu_slug}" );
+		}
+		return $location;
+	}
+
+	/**
+	 * Default settings.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return array Default settings.
+	 */
+	public static function settings_defaults() {
+		$options       = array();
+		$default_types = array(
+			'color',
+			'css',
+			'csv',
+			'file',
+			'html',
+			'multicheck',
+			'number',
+			'numbercsv',
+			'password',
+			'postids',
+			'posttypes',
+			'radio',
+			'radiodesc',
+			'repeater',
+			'select',
+			'sensitive',
+			'taxonomies',
+			'text',
+			'textarea',
+			'thumbsizes',
+			'url',
+			'wysiwyg',
+		);
+
+		// Populate some default values.
+		foreach ( self::get_registered_settings() as $tab => $settings ) {
+			foreach ( $settings as $option ) {
+				if ( ! isset( $option['id'] ) ) {
+					continue;
+				}
+
+				$setting_id    = $option['id'];
+				$setting_type  = $option['type'] ?? '';
+				$default_value = '';
+
+				// When checkbox is set to true, set this to 1.
+				if ( 'checkbox' === $setting_type ) {
+					$default_value = isset( $option['default'] ) ? (int) (bool) $option['default'] : 0;
+				} elseif ( isset( $option['default'] ) && in_array( $setting_type, $default_types, true ) ) {
+					$default_value = $option['default'];
+				}
+
+				$options[ $setting_id ] = $default_value;
+			}
 		}
 
-		return $settings;
+		/**
+		 * Filters the default settings array.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param array $options Default settings.
+		 */
+		return apply_filters( self::$prefix . '_settings_defaults', $options );
 	}
 }
