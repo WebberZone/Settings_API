@@ -20,7 +20,6 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * ATA Settings class to register the settings.
  *
- * @version 1.0
  * @since   1.7.0
  */
 class Settings {
