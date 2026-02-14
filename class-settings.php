@@ -856,7 +856,7 @@ class Settings {
 		if ( false !== strpos( $file, 'Settings_API' ) ) {
 			$new_links = array(
 				'support'    => '<a href = "https://webberzone.com/support/">' . esc_html__( 'Support', 'settings-api' ) . '</a>',
-				'donate'     => '<a href = "https://ajaydsouza.com/donate/">' . esc_html__( 'Donate', 'settings-api' ) . '</a>',
+				'donate'     => '<a href = "https://wzn.io/donate-wz">' . esc_html__( 'Donate', 'settings-api' ) . '</a>',
 				'contribute' => '<a href = "https://github.com/webberzone">' . esc_html__( 'Contribute', 'settings-api' ) . '</a>',
 			);
 
