@@ -866,6 +866,8 @@ class Settings_Form {
 			var wrapper = $('#<?php echo esc_js( $args['id'] ); ?>-wrapper');
 			var itemsContainer = wrapper.find('.<?php echo esc_js( $args['id'] ); ?>-items');
 			var index = <?php echo esc_js( (string) count( $value ) ); ?>;
+			var liveUpdateField = '<?php echo esc_js( ! empty( $args['live_update_field'] ) ? $args['live_update_field'] : 'name' ); ?>';
+			var fallbackTitle = '<?php echo esc_js( ! empty( $args['new_item_text'] ) ? $args['new_item_text'] : $this->translation_strings['repeater_new_item'] ); ?>';
 
 			// Add Item
 				wrapper.on('click', '.add-item', function() {
@@ -943,6 +945,14 @@ class Settings_Form {
 					});
 				});
 			}
+
+			// Live update repeater title when the specified field changes.
+			wrapper.on('input', '.wz-repeater-item input[name$="[fields][' + liveUpdateField + ']"]', function() {
+				var $this = $(this);
+				var newName = $this.val();
+				var $repeaterTitle = $this.closest('.wz-repeater-item').find('.repeater-title');
+				$repeaterTitle.text(newName || fallbackTitle);
+			});
 		});
 		</script>
 		<?php
@@ -1048,23 +1058,8 @@ class Settings_Form {
 				</button>
 			</div>
 		</div>
-	</div>
+		</div>
 
-	<script>
-	jQuery(document).ready(function($) {
-		var wrapper = $('#<?php echo esc_js( $args['id'] ); ?>-wrapper');
-		var itemsContainer = wrapper.find('.<?php echo esc_js( $args['id'] ); ?>-items');
-
-		// Live update repeater title when the specified field changes
-		var liveUpdateField = '<?php echo esc_js( ! empty( $args['live_update_field'] ) ? $args['live_update_field'] : 'name' ); ?>';
-		wrapper.on('input', '.wz-repeater-item input[name$="[fields][' + liveUpdateField + ']"]', function() {
-			var $this = $(this);
-			var newName = $this.val();
-			var $repeaterTitle = $this.closest('.wz-repeater-item').find('.repeater-title');
-			$repeaterTitle.text(newName || '<?php echo esc_js( $fallback_title ); ?>'); // Update title or set default if empty
-		});
-	});
-	</script>
 		<?php
 	}
 
