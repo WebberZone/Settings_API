@@ -1062,7 +1062,6 @@ class Settings_Form {
 			var newName = $this.val();
 			var $repeaterTitle = $this.closest('.wz-repeater-item').find('.repeater-title');
 			$repeaterTitle.text(newName || '<?php echo esc_js( $fallback_title ); ?>'); // Update title or set default if empty
-			});
 		});
 		</script>
 		<?php
