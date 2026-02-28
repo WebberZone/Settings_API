@@ -2,7 +2,7 @@
 /**
  * Class to display and save a Metabox.
  *
- * @package WebberZone\Better_External_Links
+ * @package WebberZone\Settings_API\Admin
  */
 
 namespace WebberZone\Settings_API\Admin\Settings;
