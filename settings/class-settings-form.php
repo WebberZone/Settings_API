@@ -939,7 +939,7 @@ class Settings_Form {
 					$(this).find(':input').each(function() {
 						var name = $(this).attr('name');
 						if (name) {
-							name = name.replace(/\[\d+\]/, '[' + idx + ']');
+							name = name.replace(/\[\d+\](?=\[(?:fields|row_id)\])/, '[' + idx + ']');
 							$(this).attr('name', name);
 						}
 					});
@@ -947,7 +947,7 @@ class Settings_Form {
 			}
 
 			// Live update repeater title when the specified field changes.
-			wrapper.on('input', '.wz-repeater-item input[name$="[fields][' + liveUpdateField + ']"]', function() {
+			wrapper.on('input', '.wz-repeater-item :input[name$="[fields][' + liveUpdateField + ']"]', function() {
 				var $this = $(this);
 				var newName = $this.val();
 				var $repeaterTitle = $this.closest('.wz-repeater-item').find('.repeater-title');
