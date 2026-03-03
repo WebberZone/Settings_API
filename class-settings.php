@@ -3,7 +3,7 @@
  * Register Settings.
  *
  * @link  https://webberzone.com
- * @since 1.7.0
+ * @since 1.0.0
  *
  * @package WebberZone\Settings_API\Admin
  */
@@ -18,16 +18,16 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * ATA Settings class to register the settings.
+ * Settings class to register the settings.
  *
- * @since   1.7.0
+ * @since 1.0.0
  */
 class Settings {
 
 	/**
 	 * Settings API.
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 *
 	 * @var object Settings API.
 	 */
@@ -36,7 +36,7 @@ class Settings {
 	/**
 	 * Settings Page in Admin area.
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 *
 	 * @var string Settings Page.
 	 */
@@ -45,7 +45,7 @@ class Settings {
 	/**
 	 * Prefix which is used for creating the unique filters and actions.
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 *
 	 * @var string Prefix.
 	 */
@@ -54,7 +54,7 @@ class Settings {
 	/**
 	 * Settings Key.
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 *
 	 * @var string Settings Key.
 	 */
@@ -63,7 +63,7 @@ class Settings {
 	/**
 	 * The slug name to refer to this menu by (should be unique for this menu).
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 *
 	 * @var string Menu slug.
 	 */
@@ -72,7 +72,7 @@ class Settings {
 	/**
 	 * Main constructor class.
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 */
 	public function __construct() {
 		$this->settings_key = 'settings_api_settings';
@@ -83,6 +83,9 @@ class Settings {
 		Hook_Registry::add_filter( 'plugin_row_meta', array( $this, 'plugin_row_meta' ), 11, 2 );
 		Hook_Registry::add_filter( self::$prefix . '_settings_sanitize', array( $this, 'change_settings_on_save' ), 99 );
 		Hook_Registry::add_action( 'admin_menu', array( $this, 'redirect_on_save' ) );
+
+		Hook_Registry::add_action( 'wp_ajax_nopriv_' . self::$prefix . '_taxonomy_search_tom_select', array( __CLASS__, 'taxonomy_search_tom_select' ) );
+		Hook_Registry::add_action( 'wp_ajax_' . self::$prefix . '_taxonomy_search_tom_select', array( __CLASS__, 'taxonomy_search_tom_select' ) );
 	}
 
 	/**
@@ -161,7 +164,7 @@ class Settings {
 	/**
 	 * Array containing the settings' sections.
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 *
 	 * @return array Settings array
 	 */
@@ -189,7 +192,7 @@ class Settings {
 	/**
 	 * Retrieve the array of plugin settings
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 *
 	 * @return array Settings array
 	 */
@@ -218,7 +221,7 @@ class Settings {
 	/**
 	 * Returns the Header settings.
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 *
 	 * @return array Header settings.
 	 */
@@ -253,12 +256,27 @@ class Settings {
 				'type'    => 'text',
 				'default' => 999,
 			),
+			'include_on_category'    => array(
+				'id'               => 'include_on_category',
+				'name'             => esc_html__( 'Include on these Categories', 'settings-api' ),
+				'desc'             => esc_html__( 'Comma separated list of category slugs. The field above has an autocomplete so simply start typing in the starting letters and it will prompt you with options. Does not support custom taxonomies.', 'settings-api' ),
+				'type'             => 'csv',
+				'default'          => '',
+				'size'             => 'large',
+				'field_class'      => 'ts_autocomplete',
+				'field_attributes' => array(
+					'data-wp-prefix'   => strtoupper( self::$prefix ),
+					'data-wp-action'   => self::$prefix . '_taxonomy_search_tom_select',
+					'data-wp-nonce'    => wp_create_nonce( self::$prefix . '_taxonomy_search_tom_select' ),
+					'data-wp-endpoint' => 'category',
+				),
+			),
 		);
 
 		/**
 		 * Filters the Header settings array
 		 *
-		 * @since 1.7.0
+		 * @since 1.0.0
 		 *
 		 * @param array $settings Header Settings array
 		 */
@@ -744,7 +762,7 @@ class Settings {
 	/**
 	 * Copyright notice text.
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 * @return string Copyright notice
 	 */
 	public static function get_copyright_text() {
@@ -766,7 +784,7 @@ class Settings {
 	/**
 	 * Upgrade v1.1.0 settings to v1.2.0.
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 * @return array Settings array
 	 */
 	public function get_upgrade_settings() {
@@ -826,7 +844,7 @@ class Settings {
 	/**
 	 * Adding WordPress plugin action links.
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 *
 	 * @param array $links Array of links.
 	 * @return array
@@ -845,7 +863,7 @@ class Settings {
 	/**
 	 * Add meta links on Plugins page.
 	 *
-	 * @since 1.7.0
+	 * @since 1.0.0
 	 *
 	 * @param array  $links Array of Links.
 	 * @param string $file Current file.
@@ -986,6 +1004,10 @@ class Settings {
 	 * @return array Sanitized settings array.
 	 */
 	public function change_settings_on_save( $settings ) {
+
+		// Sanitize include_on_category to save a new entry of include_on_categories.
+		Settings\Settings_Sanitize::sanitize_tax_slugs( $settings, 'include_on_category', 'include_on_categories' );
+
 		return $settings;
 	}
 
@@ -1076,5 +1098,152 @@ class Settings {
 		 * @param array $options Default settings.
 		 */
 		return apply_filters( self::$prefix . '_settings_defaults', $options );
+	}
+
+	/**
+	 * AJAX handler for Tom Select taxonomy search.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public static function taxonomy_search_tom_select() {
+		// Verify nonce.
+		if ( ! isset( $_REQUEST['nonce'] ) ) {
+			wp_send_json_error( array( 'message' => 'Missing nonce' ) );
+		}
+
+		$nonce_valid = wp_verify_nonce( sanitize_key( $_REQUEST['nonce'] ), self::$prefix . '_taxonomy_search_tom_select' );
+
+		if ( ! $nonce_valid ) {
+			wp_send_json_error(
+				array(
+					'message'         => 'Invalid nonce',
+					'received_nonce'  => sanitize_key( $_REQUEST['nonce'] ),
+					'expected_action' => self::$prefix . '_taxonomy_search_tom_select',
+				)
+			);
+		}
+
+		if ( ! isset( $_REQUEST['endpoint'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			wp_send_json_error( 'Missing endpoint' );
+		}
+
+		$endpoint = sanitize_key( $_REQUEST['endpoint'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$search_term = isset( $_REQUEST['q'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['q'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$comma = _x( ',', 'tag delimiter', 'settings-api' );
+		if ( ',' !== $comma ) {
+			$search_term = str_replace( $comma, ',', $search_term );
+		}
+		if ( false !== strpos( $search_term, ',' ) ) {
+			$search_term = explode( ',', $search_term );
+			$search_term = $search_term[ count( $search_term ) - 1 ];
+		}
+		$search_term = trim( $search_term );
+
+		if ( 'meta_keys' === $endpoint ) {
+			if ( ! current_user_can( 'manage_options' ) ) {
+				wp_send_json_error( 'Insufficient permissions' );
+			}
+
+			if ( strlen( $search_term ) < 2 ) {
+				wp_send_json_success( array() );
+			}
+
+			global $wpdb;
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$keys = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT DISTINCT meta_key FROM {$wpdb->postmeta} WHERE meta_key LIKE %s ORDER BY meta_key ASC LIMIT 20",
+					'%' . $wpdb->esc_like( $search_term ) . '%'
+				)
+			);
+
+			$results = array();
+			foreach ( (array) $keys as $meta_key ) {
+				if ( is_string( $meta_key ) && '' !== $meta_key ) {
+					$results[] = array(
+						'value' => $meta_key,
+						'text'  => $meta_key,
+					);
+				}
+			}
+
+			wp_send_json_success( $results );
+		}
+
+		if ( 'public_taxonomies' === $endpoint ) {
+			$taxonomies = (array) get_taxonomies( array( 'public' => true ), 'objects' );
+			$taxonomy   = array();
+			$tax        = null;
+
+			foreach ( $taxonomies as $taxonomy_name => $taxonomy_object ) {
+				if ( ! is_string( $taxonomy_name ) || '' === $taxonomy_name ) {
+					continue;
+				}
+
+				if ( empty( $taxonomy_object->cap->assign_terms ) ) {
+					continue;
+				}
+
+				if ( ! current_user_can( $taxonomy_object->cap->assign_terms ) ) {
+					continue;
+				}
+
+				$taxonomy[] = $taxonomy_name;
+			}
+
+			if ( empty( $taxonomy ) ) {
+				wp_send_json_success( array() );
+			}
+
+			$tax = get_taxonomy( $taxonomy[0] );
+		} else {
+			$taxonomy = $endpoint;
+			$tax      = get_taxonomy( $taxonomy );
+
+			if ( ! $tax ) {
+				wp_send_json_error( 'Invalid taxonomy' );
+			}
+
+			if ( ! current_user_can( $tax->cap->assign_terms ) ) {
+				wp_send_json_error( 'Insufficient permissions' );
+			}
+		}
+
+		/** This filter has been defined in /wp-admin/includes/ajax-actions.php */
+		$term_search_min_chars = (int) apply_filters( 'term_search_min_chars', 2, $tax, $search_term );
+
+		/*
+		 * Require $term_search_min_chars chars for matching (default: 2)
+		 * ensure it's a non-negative, non-zero integer.
+		 */
+		if ( ( 0 === $term_search_min_chars ) || ( strlen( $search_term ) < $term_search_min_chars ) ) {
+			wp_send_json_success( array() );
+		}
+
+		$terms = get_terms(
+			array(
+				'taxonomy'   => $taxonomy,
+				'name__like' => $search_term,
+				'orderby'    => 'name',
+				'order'      => 'ASC',
+				'number'     => 20,
+				'hide_empty' => false,
+			)
+		);
+
+		$results = array();
+		foreach ( (array) $terms as $term ) {
+			$formatted_string = "{$term->name} ({$term->taxonomy}:{$term->term_taxonomy_id})";
+			$results[]        = array(
+				'value' => $formatted_string,
+				'text'  => $term->name,
+			);
+		}
+
+		wp_send_json_success( $results );
 	}
 }

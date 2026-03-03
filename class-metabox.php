@@ -170,30 +170,6 @@ class Metabox {
 				'type'    => 'postids',
 				'default' => '',
 			),
-			'include_on_category'  => array(
-				'id'               => 'include_on_category',
-				'name'             => esc_html__( 'Include on these Categories', 'settings-api' ),
-				'desc'             => esc_html__( 'Comma separated list of category slugs. The field above has an autocomplete so simply start typing in the starting letters and it will prompt you with options. Does not support custom taxonomies.', 'settings-api' ),
-				'type'             => 'csv',
-				'default'          => '',
-				'size'             => 'large',
-				'field_class'      => 'category_autocomplete',
-				'field_attributes' => array(
-					'data-wp-taxonomy' => 'category',
-				),
-			),
-			'include_on_post_tag'  => array(
-				'id'               => 'include_on_post_tag',
-				'name'             => esc_html__( 'Include on these Tags', 'settings-api' ),
-				'desc'             => esc_html__( 'Comma separated list of tag slugs. The field above has an autocomplete so simply start typing in the starting letters and it will prompt you with options. Does not support custom taxonomies.', 'settings-api' ),
-				'type'             => 'csv',
-				'default'          => '',
-				'size'             => 'large',
-				'field_class'      => 'category_autocomplete',
-				'field_attributes' => array(
-					'data-wp-taxonomy' => 'post_tag',
-				),
-			),
 			'step3_header'         => array(
 				'id'   => 'step3_header',
 				'name' => '<h3>' . esc_html__( 'Step 3: Priority', 'settings-api' ) . '</h3>',
