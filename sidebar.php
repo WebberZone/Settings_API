@@ -55,6 +55,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<li><a href="https://webberzone.com/webberzone-followed-posts/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Followed Posts', 'settings-api' ); ?></a></li>
 					<li><a href="https://webberzone.com/plugins/popular-authors/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Popular Authors', 'settings-api' ); ?></a></li>
 					<li><a href="https://webberzone.com/plugins/autoclose/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Auto Close', 'settings-api' ); ?></a></li>
+					<li><a href="https://webberzone.com/plugins/webberzone-link-warnings/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Link Warnings', 'settings-api' ); ?></a></li>
 				</ul>
 			</div>
 		</div>
