@@ -452,7 +452,9 @@ class Settings_Sanitize {
 	 */
 	public static function sanitize_tax_slugs( &$settings, $source_key, $target_key ) {
 		if ( isset( $settings[ $source_key ] ) ) {
-			$slugs = array_unique( str_getcsv( $settings[ $source_key ], ',', '"', '' ) );
+			$slugs     = array_unique( str_getcsv( $settings[ $source_key ], ',', '"', '' ) );
+			$tax_ids   = array();
+			$tax_slugs = array();
 
 			foreach ( $slugs as $slug ) {
 				// Pattern is Name (taxonomy:term_taxonomy_id).
