@@ -271,7 +271,7 @@ class Settings_Form {
 
 		$value       = $args['value'] ?? $this->get_option( $args['id'], $args['default'] );
 		$class       = sanitize_html_class( $args['field_class'] );
-		$placeholder = empty( $args['placeholder'] ) ? '' : ' placeholder="' . $args['placeholder'] . '"';
+		$placeholder = empty( $args['placeholder'] ) ? '' : ' placeholder="' . esc_attr( $args['placeholder'] ) . '"';
 		$disabled    = ( ! empty( $args['disabled'] ) || $args['pro'] ) ? ' disabled="disabled"' : '';
 		$readonly    = ( isset( $args['readonly'] ) && true === $args['readonly'] ) ? ' readonly="readonly"' : '';
 		$required    = ( isset( $args['required'] ) && true === $args['required'] ) ? ' required' : '';
