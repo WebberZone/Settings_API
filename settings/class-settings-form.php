@@ -949,9 +949,10 @@ class Settings_Form {
 			$attributes .= sprintf( ' %1$s="%2$s"', sanitize_key( $attribute ), esc_attr( $val ) );
 		}
 
-		$data_index        = (string) count( $value );
-		$live_update_field = ! empty( $args['live_update_field'] ) ? $args['live_update_field'] : 'name';
-		$fallback_title    = ! empty( $args['new_item_text'] ) ? $args['new_item_text'] : $this->translation_strings['repeater_new_item'];
+		$data_index          = (string) count( $value );
+		$live_update_field   = ! empty( $args['live_update_field'] ) ? $args['live_update_field'] : 'name';
+		$fallback_title      = ! empty( $args['new_item_text'] ) ? $args['new_item_text'] : $this->translation_strings['repeater_new_item'];
+		$live_update_options = ! empty( $args['live_update_field_options'] ) && is_array( $args['live_update_field_options'] ) ? $args['live_update_field_options'] : array();
 
 		ob_start();
 		?>
@@ -960,6 +961,9 @@ class Settings_Form {
 			data-index="<?php echo esc_attr( $data_index ); ?>"
 			data-live-update-field="<?php echo esc_attr( $live_update_field ); ?>"
 			data-fallback-title="<?php echo esc_attr( $fallback_title ); ?>"
+			<?php if ( ! empty( $live_update_options ) ) : ?>
+			data-live-update-field-options="<?php echo esc_attr( wp_json_encode( $live_update_options ) ); ?>"
+			<?php endif; ?>
 			<?php echo $attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 
 			<div class="<?php echo esc_attr( $args['id'] ); ?>-items wz-repeater-items">
@@ -1019,9 +1023,14 @@ class Settings_Form {
 			<input type="hidden" name="<?php echo esc_attr( $this->settings_key ); ?>[<?php echo esc_attr( $args['id'] ); ?>][<?php echo esc_attr( $index ); ?>][row_id]" value="<?php echo esc_attr( $item_id ); ?>" />
 			<div class="repeater-item-header">
 			<?php
-			$display_field = ! empty( $args['live_update_field'] ) ? $args['live_update_field'] : 'name';
+			$display_field  = ! empty( $args['live_update_field'] ) ? $args['live_update_field'] : 'name';
+			$live_options   = ! empty( $args['live_update_field_options'] ) && is_array( $args['live_update_field_options'] ) ? $args['live_update_field_options'] : array();
+			$raw_live_value = ! empty( $item['fields'][ $display_field ] ) ? (string) $item['fields'][ $display_field ] : '';
+			$display_value  = '' !== $raw_live_value
+				? ( isset( $live_options[ $raw_live_value ] ) ? $live_options[ $raw_live_value ] : $raw_live_value )
+				: $fallback_title;
 			?>
-			<span class="repeater-title"><?php echo esc_html( ! empty( $item['fields'][ $display_field ] ) ? $item['fields'][ $display_field ] : $fallback_title ); ?></span>
+			<span class="repeater-title"><?php echo esc_html( $display_value ); ?></span>
 			<span class="toggle-icon">▼</span>
 		</div>
 		<div class="repeater-item-content" style="display: none;">
