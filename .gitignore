@@ -2,3 +2,5 @@
 .claude/
 /build/
 .commandcode/
+
+.devin/
