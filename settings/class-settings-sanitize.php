@@ -4,7 +4,7 @@
  *
  * @link  https://webberzone.com
  *
- * @package WebberZone\Settings_API\Admin
+ * @package WebberZone\Settings_API
  */
 
 namespace WebberZone\Settings_API\Admin\Settings;

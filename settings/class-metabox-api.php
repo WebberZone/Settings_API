@@ -2,7 +2,7 @@
 /**
  * Class to display and save a Metabox.
  *
- * @package WebberZone\Settings_API\Admin
+ * @package WebberZone\Settings_API
  */
 
 namespace WebberZone\Settings_API\Admin\Settings;

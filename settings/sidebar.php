@@ -2,7 +2,7 @@
 /**
  * Sidebar template.
  *
- * @package WebberZone\Settings_API\Admin
+ * @package WebberZone\Settings_API
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
