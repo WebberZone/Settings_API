@@ -4,3 +4,6 @@
 .commandcode/
 
 .devin/
+
+# Testing
+/.playwright-mcp
