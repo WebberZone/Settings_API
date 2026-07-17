@@ -41,10 +41,12 @@ When copying the library into a plugin, rename the root namespace segment (`Webb
 
 ## Key classes and responsibilities
 
-### `Settings_API` (`settings/class-settings-api.php`) — version 2.8.2
+### `Settings_API` (`settings/class-settings-api.php`) — version 2.9.0
+
 The main entry point. Constructed with a `$settings_key` (WordPress option name), a `$prefix` (used to namespace all hooks and JS handles), and an `$args` array containing sections, registered settings, and presentation props.
 
 Responsibilities:
+
 - Registers admin menus (submenu, top-level, or any `add_*_page` variant) via `add_custom_menu_page()`.
 - Calls `register_setting()` and `add_settings_field()` for every declared field.
 - Renders the tabbed settings page (`show_navigation()` + `show_form()`) with Save and Reset buttons.
@@ -55,6 +57,7 @@ Responsibilities:
 - Exposes contextual help tabs and a sidebar partial.
 
 ### `Settings_Form` (`settings/class-settings-form.php`)
+
 Holds one `callback_*` method for each field type. `Settings_API::admin_init()` wires each registered field to the appropriate callback. Field types supported:
 
 `text`, `url`, `csv`, `color`, `numbercsv`, `postids`, `textarea`, `css`, `html`, `checkbox`, `multicheck`, `radio`, `radiodesc`, `thumbsizes`, `number`, `select`, `posttypes`, `taxonomies`, `wysiwyg`, `file`, `password`, `repeater`, `sensitive`, `header`, `descriptive_text`
@@ -64,18 +67,23 @@ The `repeater` type renders an accordion-style list of sub-fields with add/remov
 Every callback applies the `{$prefix}_after_setting_output` filter before echoing.
 
 ### `Settings_Sanitize` (`settings/class-settings-sanitize.php`)
-Provides one `sanitize_*_field()` method per field type. `Settings_API::get_sanitize_callback()` looks up the right method by field type at save time. Handles text, number, CSV, checkbox, multicheck, posttypes, taxonomies, color, email, URL, sensitive (encrypts via `Settings_API::encrypt_api_key()`), and repeater (recursively sanitizes sub-fields).
+
+Provides one `sanitize_*_field()` method per field type. `Settings_API::get_sanitize_callback()` looks up the right method by field type at save time. Handles text, number, CSV, numbercsv, postids, textarea, checkbox, multicheck, posttypes, taxonomies, color, email, URL, sensitive (encrypts via `Settings_API::encrypt_api_key()`), and repeater (recursively sanitizes sub-fields).
 
 ### `Settings_Wizard_API` (`settings/class-settings-wizard-api.php`)
+
 Optional multi-step guided setup wizard. Constructed with the same `$settings_key` / `$prefix` pattern plus a `$steps` array. Registers its own admin page, renders step navigation, and saves each step's fields directly into the plugin's options via `Settings_Sanitize`. Shares the same CSS asset (`wizard.css`).
 
 ### `Metabox_API` (`settings/class-metabox-api.php`)
+
 Renders a standard WordPress post metabox using the same field-definition array format as `Settings_API`. Each field value is stored as individual post meta with the key `_{$prefix}_{$field_id}`. Handles nonce verification and capability checks on save.
 
 ### `Hook_Registry` (`util/class-hook-registry.php`)
-Static registry that wraps `add_action` / `add_filter` and prevents duplicate registrations. Used by the example `Settings` and `Metabox` classes. Provides `add_action()`, `add_filter()`, `remove_action()`, `remove_filter()`, `remove_all_hooks()`.
+
+Static registry that wraps `add_action` / `add_filter` and prevents duplicate registrations. Used by the example `Settings` and `Metabox` classes. Provides `register()`, `add_action()`, `add_filter()`, `remove()`, `remove_action()`, `remove_filter()`, `get_hooks()`, and `remove_all_hooks()`.
 
 ### `Settings` (`class-settings.php`) and `Metabox` (`class-metabox.php`)
+
 These are **example/reference implementations**, not part of the library core. Each consuming plugin copies one or both, renames the class, and fills in `get_registered_settings()`, menu slugs, prefix, and option key.
 
 ## How consuming plugins integrate the library
@@ -92,10 +100,11 @@ add_action( 'admin_menu', function() {
 } );
 ```
 
-5. The library fires dynamic filters the plugin can use:
+1. The library fires dynamic filters the plugin can use:
    - `{$prefix}_settings_defaults` — override default values
    - `{$prefix}_settings_{$tab}_sanitize` — intercept input before field-level sanitization
    - `{$prefix}_settings_sanitize` — filter the final saved array
+   - `{$prefix}_get_settings_types` — filter the registered settings types array
    - `{$prefix}_after_setting_output` — modify rendered field HTML
    - `{$prefix}_non_setting_types` — declare additional display-only field types
 
