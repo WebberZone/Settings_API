@@ -2,6 +2,13 @@
 
 This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
+## Response Rules
+
+- Return only the changed function or section, not the full file
+- No explanation unless asked
+- No suggestions outside the scope of what was asked
+- Skip preamble and trailing summaries
+
 ## What this library is
 
 WebberZone Settings API is a reusable PHP library that wraps the native WordPress Settings API. It powers the admin interfaces across WebberZone plugins (Better Search, Contextual Related Posts, Knowledge Base, etc.). It is not distributed as a Composer package — consuming plugins copy the files directly into their own source tree and adjust the namespace, prefix, and option key to match the plugin.
