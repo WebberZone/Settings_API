@@ -9,6 +9,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - No suggestions outside the scope of what was asked
 - Skip preamble and trailing summaries
 
+## Links
+
+- GitHub: <https://github.com/WebberZone/Settings_API>
+
+Not a standalone WordPress plugin — no WordPress.org listing, documentation page, or webberzone.com/plugins page.
+
 ## What this library is
 
 WebberZone Settings API is a reusable PHP library that wraps the native WordPress Settings API. It powers the admin interfaces across WebberZone plugins (Better Search, Contextual Related Posts, Knowledge Base, etc.). It is not distributed as a Composer package — consuming plugins copy the files directly into their own source tree and adjust the namespace, prefix, and option key to match the plugin.
