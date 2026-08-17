@@ -45,11 +45,16 @@ class Settings {
 	/**
 	 * Prefix which is used for creating the unique filters and actions.
 	 *
+	 * Initialised at declaration, not only in the constructor. The static methods on
+	 * this class are reachable on the frontend where the Settings object is never
+	 * instantiated, and a null prefix there builds the wrong hook name — firing
+	 * `_settings_defaults` instead of `{$prefix}_settings_defaults`.
+	 *
 	 * @since 1.0.0
 	 *
 	 * @var string Prefix.
 	 */
-	public static $prefix;
+	public static $prefix = 'settings_api';
 
 	/**
 	 * Settings Key.
@@ -188,6 +193,107 @@ class Settings {
 		return apply_filters( self::$prefix . '_settings_sections', $settings_sections );
 	}
 
+	/**
+	 * Raw default values for every setting, keyed by option ID.
+	 *
+	 * Single source of truth for field defaults. The field definition methods below
+	 * reference this array instead of duplicating literals, and `Options_API` reads
+	 * it to resolve a single default without building every field definition.
+	 *
+	 * Four rules govern this array:
+	 *
+	 * 1. No translation calls, and no calls to anything that translates. It must be
+	 *    safe to invoke before `init` so an option read on the frontend cannot
+	 *    trigger a "translation loading triggered too early" notice.
+	 * 2. Values are pre-normalised to match what `settings_defaults()` emits after
+	 *    its casts — checkbox defaults are `1`/`0`, never `true`/`false`.
+	 * 3. Every registered option has an entry, including fields whose definition
+	 *    omits `'default'` entirely. Those resolve to `''` in `settings_defaults()`,
+	 *    so they need an explicit `''` here or the option silently resolves to
+	 *    `false`. Section headers and descriptive text are the only exclusions.
+	 * 4. It is deliberately unfiltered. `{$prefix}_settings_defaults` is applied by
+	 *    the consumers — `settings_defaults()` and `Options_API::get_default_option()`
+	 *    — so it runs exactly once on each path.
+	 *
+	 * A default that needs translating or computing at runtime cannot live here.
+	 * Store the raw base value and let the consumer supply the translated or
+	 * computed value as the second argument to the option getter, which
+	 * short-circuits the default lookup entirely:
+	 *
+	 *     $title = get_option_helper( 'feed_title_text', __( '…', 'text-domain' ) );
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array Raw default values keyed by option ID.
+	 */
+	public static function get_defaults() {
+		return array(
+			// General.
+			'enable_snippets'                => 1,
+			'enable_external_css_js'         => 0,
+			'enable_combination'             => 0,
+			'snippet_priority'               => 999,
+			'include_on_category'            => '',
+
+			// Third party.
+			'sc_project'                     => '',
+			'sc_security'                    => '',
+			'ga_uacct'                       => '',
+			'google_verification'            => '',
+			'bing_verification'              => '',
+			'facebook_domain_verification'   => '',
+			'pinterest_verification'         => '',
+
+			// Head.
+			'head_css'                       => '',
+			'head_other_html'                => '',
+
+			// Body.
+			'wp_body_open'                   => '',
+			'content_filter_priority'        => 999,
+			'exclude_on_post_ids'            => '',
+			'content_process_shortcode'      => 0,
+			'content_add_html_before'        => 0,
+			'content_html_before'            => '',
+			'content_add_html_after'         => 0,
+			'content_html_after'             => '',
+			'content_add_html_before_single' => 0,
+			'content_html_before_single'     => '',
+			'content_add_html_after_single'  => 0,
+			'content_html_after_single'      => '',
+			'content_add_html_before_post'   => 0,
+			'content_html_before_post'       => '',
+			'content_add_html_after_post'    => 0,
+			'content_html_after_post'        => '',
+			'content_add_html_before_page'   => 0,
+			'content_html_before_page'       => '',
+			'content_add_html_after_page'    => 0,
+			'content_html_after_page'        => '',
+
+			// Footer.
+			'footer_process_shortcode'       => 0,
+			'footer_other_html'              => '',
+			'add_credit'                     => 0,
+
+			/*
+			 * Feed.
+			 *
+			 * `feed_copyrightnotice` is the worked example of rule 4 above: its field
+			 * definition used to call `self::get_copyright_text()`, which translates and
+			 * reads site options. The raw base value is empty here, and the consumer
+			 * passes `self::get_copyright_text()` as the getter's default instead.
+			 */
+			'feed_add_copyright'             => 1,
+			'feed_copyrightnotice'           => '',
+			'feed_add_title'                 => 1,
+			'feed_title_text'                => '%title% was first posted on %date% at %time%.',
+			'feed_process_shortcode'         => 0,
+			'feed_add_html_before'           => 0,
+			'feed_html_before'               => '',
+			'feed_add_html_after'            => 0,
+			'feed_html_after'                => '',
+		);
+	}
 
 	/**
 	 * Retrieve the array of plugin settings
@@ -227,41 +333,42 @@ class Settings {
 	 */
 	public static function settings_general() {
 
+		$defaults = self::get_defaults();
 		$settings = array(
 			'enable_snippets'        => array(
 				'id'      => 'enable_snippets',
 				'name'    => esc_html__( 'Enable Snippets Manager', 'settings-api' ),
 				'desc'    => esc_html__( 'Disabling this will turn off the Snippets manager and any of the associated functionality. This will not delete any snippets data that was created before this was turned off.', 'settings-api' ),
 				'type'    => 'checkbox',
-				'default' => true,
+				'default' => $defaults['enable_snippets'],
 			),
 			'enable_external_css_js' => array(
 				'id'      => 'enable_external_css_js',
 				'name'    => esc_html__( 'Enable external CSS/JS files', 'settings-api' ),
 				'desc'    => esc_html__( 'Save CSS and JS snippets as external minified files instead of inline output. Improves page load performance.', 'settings-api' ),
 				'type'    => 'checkbox',
-				'default' => false,
+				'default' => $defaults['enable_external_css_js'],
 			),
 			'enable_combination'     => array(
 				'id'      => 'enable_combination',
 				'name'    => esc_html__( 'Enable file combination', 'settings-api' ),
 				'desc'    => esc_html__( 'Combine all CSS/JS snippets into single files. Note: Conditions are ignored for combined files.', 'settings-api' ),
 				'type'    => 'checkbox',
-				'default' => false,
+				'default' => $defaults['enable_combination'],
 			),
 			'snippet_priority'       => array(
 				'id'      => 'snippet_priority',
 				'name'    => esc_html__( 'Snippet content priority', 'settings-api' ),
 				'desc'    => esc_html__( 'Priority of the snippet content. Lower number means all snippets are added earlier relative to other content. Number below 10 is not recommended. At the next level, priority of each snippet is independently set from the Edit Snippets screen.', 'settings-api' ),
 				'type'    => 'text',
-				'default' => 999,
+				'default' => $defaults['snippet_priority'],
 			),
 			'include_on_category'    => array(
 				'id'               => 'include_on_category',
 				'name'             => esc_html__( 'Include on these Categories', 'settings-api' ),
 				'desc'             => esc_html__( 'Comma separated list of category slugs. The field above has an autocomplete so simply start typing in the starting letters and it will prompt you with options. Does not support custom taxonomies.', 'settings-api' ),
 				'type'             => 'csv',
-				'default'          => '',
+				'default'          => $defaults['include_on_category'],
 				'size'             => 'large',
 				'field_class'      => 'ts_autocomplete',
 				'field_attributes' => array(
@@ -670,13 +777,14 @@ class Settings {
 	 */
 	public static function settings_feed() {
 
+		$defaults = self::get_defaults();
 		$settings = array(
 			'feed_add_copyright'     => array(
 				'id'      => 'feed_add_copyright',
 				'name'    => esc_html__( 'Add copyright notice?', 'settings-api' ),
 				'desc'    => esc_html__( 'Check this to add the below copyright notice to your feed.', 'settings-api' ),
 				'type'    => 'checkbox',
-				'default' => true,
+				'default' => $defaults['feed_add_copyright'],
 			),
 			'feed_copyrightnotice'   => array(
 				'id'          => 'feed_copyrightnotice',
@@ -684,7 +792,7 @@ class Settings {
 				/* translators: No strings here. */
 				'desc'        => esc_html__( 'Enter valid HTML only. This copyright notice is added as the last item of your feed. You can also use %year% for the year or %first_year% for the year of the first post,', 'settings-api' ),
 				'type'        => 'html',
-				'default'     => self::get_copyright_text(),
+				'default'     => $defaults['feed_copyrightnotice'],
 				'field_class' => 'codemirror_html',
 			),
 			'feed_add_title'         => array(
@@ -692,7 +800,7 @@ class Settings {
 				'name'    => esc_html__( 'Add post title?', 'settings-api' ),
 				'desc'    => esc_html__( 'Add a link to the title of the post in the feed.', 'settings-api' ),
 				'type'    => 'checkbox',
-				'default' => true,
+				'default' => $defaults['feed_add_title'],
 			),
 			'feed_title_text'        => array(
 				'id'      => 'feed_title_text',
@@ -701,28 +809,28 @@ class Settings {
 				'desc'    => esc_html__( 'The above text will be added to the feed. You can use %title% to add a link to the post, %date% and %time% to display the date and time of the post respectively.', 'settings-api' ),
 				'type'    => 'textarea',
 				/* translators: No strings here. */
-				'default' => esc_html__( '%title% was first posted on %date% at %time%.', 'settings-api' ),
+				'default' => $defaults['feed_title_text'],
 			),
 			'feed_process_shortcode' => array(
 				'id'      => 'feed_process_shortcode',
 				'name'    => esc_html__( 'Process shortcodes in feed', 'settings-api' ),
 				'desc'    => esc_html__( 'Check this box to execute any shortcodes that you enter in the options below.', 'settings-api' ),
 				'type'    => 'checkbox',
-				'default' => false,
+				'default' => $defaults['feed_process_shortcode'],
 			),
 			'feed_add_html_before'   => array(
 				'id'      => 'feed_add_html_before',
 				'name'    => esc_html__( 'Add HTML before content?', 'settings-api' ),
 				'desc'    => esc_html__( 'Check this to add the HTML below before the content of your post.', 'settings-api' ),
 				'type'    => 'checkbox',
-				'default' => false,
+				'default' => $defaults['feed_add_html_before'],
 			),
 			'feed_html_before'       => array(
 				'id'          => 'feed_html_before',
 				'name'        => esc_html__( 'HTML to add before the content', 'settings-api' ),
 				'desc'        => esc_html__( 'Enter valid HTML or JavaScript (wrapped in script tags). No PHP allowed.', 'settings-api' ),
 				'type'        => 'html',
-				'default'     => '',
+				'default'     => $defaults['feed_html_before'],
 				'field_class' => 'codemirror_html',
 			),
 			'feed_add_html_after'    => array(
@@ -730,14 +838,14 @@ class Settings {
 				'name'    => esc_html__( 'Add HTML after content?', 'settings-api' ),
 				'desc'    => esc_html__( 'Check this to add the HTML below before the content of your post.', 'settings-api' ),
 				'type'    => 'checkbox',
-				'default' => false,
+				'default' => $defaults['feed_add_html_after'],
 			),
 			'feed_html_after'        => array(
 				'id'          => 'feed_html_after',
 				'name'        => esc_html__( 'HTML to add after the content', 'settings-api' ),
 				'desc'        => esc_html__( 'Enter valid HTML or JavaScript (wrapped in script tags). No PHP allowed.', 'settings-api' ),
 				'type'        => 'html',
-				'default'     => '',
+				'default'     => $defaults['feed_html_after'],
 				'field_class' => 'codemirror_html',
 			),
 			'add_credit'             => array(
@@ -745,7 +853,7 @@ class Settings {
 				'name'    => esc_html__( 'Add a link to the Settings API package page', 'settings-api' ),
 				'desc'    => '',
 				'type'    => 'checkbox',
-				'default' => false,
+				'default' => $defaults['add_credit'],
 			),
 		);
 
@@ -1042,31 +1150,16 @@ class Settings {
 	 * @return array Default settings.
 	 */
 	public static function settings_defaults() {
-		$options       = array();
-		$default_types = array(
-			'color',
-			'css',
-			'csv',
-			'file',
-			'html',
-			'multicheck',
-			'number',
-			'numbercsv',
-			'password',
-			'postids',
-			'posttypes',
-			'radio',
-			'radiodesc',
-			'repeater',
-			'select',
-			'sensitive',
-			'taxonomies',
-			'text',
-			'textarea',
-			'thumbsizes',
-			'url',
-			'wysiwyg',
-		);
+		$options = array();
+
+		/**
+		 * Filters the field types which are not settings and should be skipped when populating defaults.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param array $non_setting_types Array of types which are not settings.
+		 */
+		$non_setting_types = apply_filters( self::$prefix . '_non_setting_types', array( 'header', 'descriptive_text' ) );
 
 		// Populate some default values.
 		foreach ( self::get_registered_settings() as $tab => $settings ) {
@@ -1079,10 +1172,14 @@ class Settings {
 				$setting_type  = $option['type'] ?? '';
 				$default_value = '';
 
+				if ( in_array( $setting_type, $non_setting_types, true ) ) {
+					continue;
+				}
+
 				// When checkbox is set to true, set this to 1.
 				if ( 'checkbox' === $setting_type ) {
 					$default_value = isset( $option['default'] ) ? (int) (bool) $option['default'] : 0;
-				} elseif ( isset( $option['default'] ) && in_array( $setting_type, $default_types, true ) ) {
+				} elseif ( isset( $option['default'] ) ) {
 					$default_value = $option['default'];
 				}
 

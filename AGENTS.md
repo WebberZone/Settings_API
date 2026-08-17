@@ -25,6 +25,7 @@ There is no `composer.json`, `package.json`, or build system in this repository.
 
 ```
 Settings_API/
+├── class-options-api.php        # Canonical settings read/write layer (copy and customise)
 ├── class-settings.php           # Example settings-controller (copy and customise per plugin)
 ├── class-metabox.php            # Example post-metabox integration (copy and customise)
 ├── sidebar.php                  # Sidebar partial shown on settings pages
@@ -48,6 +49,7 @@ Settings_API/
 |---|---|
 | `settings/*.php` | `WebberZone\Settings_API\Admin\Settings` |
 | `class-settings.php`, `class-metabox.php` | `WebberZone\Settings_API\Admin` |
+| `class-options-api.php` | `WebberZone\Settings_API` |
 | `util/class-hook-registry.php` | `WebberZone\Settings_API\Util` |
 
 When copying the library into a plugin, rename the root namespace segment (`WebberZone\Settings_API`) to match the plugin's own namespace.
@@ -68,6 +70,16 @@ Responsibilities:
 - Handles save/reset via `settings_sanitize()`, which delegates per-field sanitization to `Settings_Sanitize`.
 - Provides static helpers `encrypt_api_key()` / `decrypt_api_key()` (OpenSSL then libsodium, falling back to plaintext) for `sensitive` field types.
 - Exposes contextual help tabs and a sidebar partial.
+
+### `Options_API` (`class-options-api.php`)
+
+The settings read/write layer every plugin exposes to its own code, and the counterpart to the procedural `*_get_option()` helpers. Unlike the example controller, this one is meant to be copied close to verbatim — change only the namespace, `SETTINGS_OPTION`, and `FILTER_PREFIX`.
+
+Provides `get_settings()`, `get_settings_with_defaults()`, `get_option()`, `get_blog_option()`, `update_option()`, `update_settings()`, `delete_option()`, `get_settings_defaults()`, `get_default_option()`, `get_registered_settings_types()`, `reset_settings()`, and `flush_cache()`.
+
+The per-request cache is **keyed by blog ID**, not a single static array. An unkeyed cache returns the wrong blog's settings after a `switch_to_blog()` in the same request — which is exactly what `get_blog_option()` does internally, and what network admin screens do in a loop. On single site the key is always `0`.
+
+`get_default_option()` reads `Settings::get_defaults()`; `get_settings_defaults()` reads `Settings::settings_defaults()`. See the defaults contract below for why they are separate.
 
 ### `Settings_Form` (`settings/class-settings-form.php`)
 
@@ -120,6 +132,27 @@ add_action( 'admin_menu', function() {
    - `{$prefix}_get_settings_types` — filter the registered settings types array
    - `{$prefix}_after_setting_output` — modify rendered field HTML
    - `{$prefix}_non_setting_types` — declare additional display-only field types
+
+## Defaults contract
+
+`Settings::get_defaults()` is the single source of truth for field defaults, and `Options_API::get_default_option()` reads it instead of building every field definition. That is what makes an option read safe before `init` — building the definitions runs `esc_html__()` on every label and triggers WordPress's "translation loading triggered too early" notice.
+
+Four rules govern the array. Breaking any of them produces a defect that phpcs, phpstan, and static inspection all miss:
+
+1. **No translation calls**, and nothing that transitively translates. This is the whole point of the array.
+2. **Values are pre-normalised** to match what `settings_defaults()` emits after its casts. Checkbox defaults are `1`/`0`, never `true`/`false` — a `false` where the saved default is `0` breaks block attributes and REST schemas typed `number`.
+3. **Every registered option has an entry**, including fields whose definition omits `'default'` entirely. Those resolve to `''` in `settings_defaults()`, so without an explicit `''` here the option silently resolves to `false`. Section headers and descriptive text are the only exclusions.
+4. **The array is unfiltered.** `{$prefix}_settings_defaults` is applied by the two consumers — `settings_defaults()` and `Options_API::get_default_option()` — so it runs exactly once on each path, and a filter callback cannot recurse into field building.
+
+A default that must be translated or computed at runtime cannot live in the array. Store the raw base value and have the consumer pass the translated or computed value as the getter's second argument, which short-circuits the default lookup entirely:
+
+```php
+$title = plugin_get_option( 'toc_title', __( 'Table of Contents', 'text-domain' ) );
+```
+
+`Settings::$prefix` must be initialised at its declaration, not only in the constructor. The static methods are reachable on the frontend where the Settings object is never instantiated, and a null prefix there fires `_settings_defaults` instead of `{$prefix}_settings_defaults`.
+
+Verify the invariant with `dev-tools/check-settings-defaults.sh <plugin>` after any settings change. It compares `get_defaults()` against `settings_defaults()` through wp-cli and reports missing keys, mismatched values, and orphaned entries.
 
 ## Field definition format
 

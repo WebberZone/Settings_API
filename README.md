@@ -13,6 +13,7 @@ Use the package as-is or as a reference implementation when building complex plu
 
 ```text
 Settings_API/
+├── class-options-api.php        # Canonical settings read/write layer (blog-aware cache)
 ├── class-settings.php           # Example settings-controller implementation
 ├── class-metabox.php            # Example post meta box integration
 ├── sidebar.php                  # Default help/CTA sidebar partial
