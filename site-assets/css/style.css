@@ -305,3 +305,59 @@ footer a:hover { color: var(--wz-off-white); }
   .page-wrap { grid-template-columns: 1fr; padding: 32px 20px 56px; }
   .sidebar { position: static; }
 }
+
+/* ══════════════════════════════════════
+   AGENT SETUP PILL
+══════════════════════════════════════ */
+.agent-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 auto 28px;
+  padding: 9px 18px;
+  border: 1px solid var(--wz-card-border);
+  border-radius: 999px;
+  background: var(--wz-white);
+  color: var(--wz-teal-text);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: .92rem;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  box-shadow: 0 1px 4px var(--wz-card-shadow);
+  transition: border-color .15s ease, box-shadow .15s ease, color .15s ease;
+}
+.agent-pill:hover {
+  border-color: var(--wz-teal);
+  color: var(--wz-teal-dark);
+  box-shadow: 0 2px 10px var(--wz-card-shadow);
+}
+.agent-pill:focus-visible {
+  outline: 3px solid var(--wz-focus-ring);
+  outline-offset: 2px;
+}
+.agent-pill svg { flex: none; }
+.agent-pill .agent-pill-check { display: none; }
+.agent-pill.is-copied { color: var(--wz-teal-dark); border-color: var(--wz-teal); }
+.agent-pill.is-copied .agent-pill-copy { display: none; }
+.agent-pill.is-copied .agent-pill-check { display: block; }
+
+.agent-prompt {
+  margin: 20px auto 0;
+  max-width: 720px;
+  padding: 14px 16px;
+  border: 1px solid var(--wz-card-border);
+  border-radius: var(--r);
+  background: var(--wz-white);
+  color: var(--wz-warm-grey);
+  font-family: 'Fira Code', ui-monospace, monospace;
+  font-size: .82rem;
+  text-align: left;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@media (max-width: 640px) {
+  .agent-pill { font-size: .85rem; padding: 8px 14px; }
+}

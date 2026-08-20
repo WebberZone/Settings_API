@@ -12,8 +12,9 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 ## Links
 
 - GitHub: <https://github.com/WebberZone/Settings_API>
+- Docs site: <https://webberzone.github.io/Settings_API/> — Jekyll site in this repo (`_config.yml`, `_layouts/`, `_includes/`, `_plugins/`, `site-assets/`, `index.md`, `docs/`), deployed from `main` by `.github/workflows/pages.yml`. Edit `docs/*.md` directly; `prompt.md` is served raw for agent setup.
 
-Not a standalone WordPress plugin — no WordPress.org listing, documentation page, or webberzone.com/plugins page.
+Not a standalone WordPress plugin — no WordPress.org listing or webberzone.com/plugins page.
 
 ## What this library is
 
@@ -28,7 +29,10 @@ Settings_API/
 ├── class-options-api.php        # Canonical settings read/write layer (copy and customise)
 ├── class-settings.php           # Example settings-controller (copy and customise per plugin)
 ├── class-metabox.php            # Example post-metabox integration (copy and customise)
+├── class-admin.php              # Example admin bootstrap wiring the admin banner
+├── class-admin-banner.php       # Reusable admin banner / quick-links header
 ├── sidebar.php                  # Sidebar partial shown on settings pages
+├── css/                         # Admin banner styles (+ RTL and .min variants)
 ├── util/
 │   └── class-hook-registry.php  # Deduplication wrapper around add_action / add_filter
 └── settings/
@@ -48,7 +52,7 @@ Settings_API/
 | File | Namespace |
 |---|---|
 | `settings/*.php` | `WebberZone\Settings_API\Admin\Settings` |
-| `class-settings.php`, `class-metabox.php` | `WebberZone\Settings_API\Admin` |
+| `class-settings.php`, `class-metabox.php`, `class-admin.php`, `class-admin-banner.php` | `WebberZone\Settings_API\Admin` |
 | `class-options-api.php` | `WebberZone\Settings_API` |
 | `util/class-hook-registry.php` | `WebberZone\Settings_API\Util` |
 

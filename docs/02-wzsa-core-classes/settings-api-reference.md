@@ -65,7 +65,7 @@ array(
 | `admin_init()` | Calls `register_setting()` and `add_settings_field()` for every declared field, wiring each to the matching `Settings_Form::callback_*` method. |
 | `settings_defaults()` | Builds the default value array from the field definitions. |
 | `get_default_option( $key )` | Returns a single default. |
-| `settings_sanitize( $input )` | Runs on save; delegates per-field sanitization to `Settings_Sanitize`. |
+| `settings_sanitize( $input )` | Runs on save. Builds the output from the stored option and delegates per-field sanitization to `Settings_Sanitize`, including for keys added by the tab filter. |
 | `settings_reset()` | Restores defaults. |
 | `get_registered_settings_types()` | Returns `field_id => type` for every registered field. |
 | `get_locked_settings()` | Returns the IDs of fields marked `disabled` or `pro`, so their saved values are preserved on submit. |

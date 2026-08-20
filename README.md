@@ -31,6 +31,16 @@ Settings_API/
                                       # tom-select-init, tom-select.complete (+ .min)
 ```
 
+## Set it up with a coding agent
+
+Paste this into Claude Code, Codex, Cursor, or any agent with file access, from inside your plugin directory:
+
+```text
+Fetch and execute the appropriate instructions to set up the WebberZone Settings API in my plugin from https://webberzone.github.io/Settings_API/prompt.md
+```
+
+The same prompt is one click away on the [documentation site](https://webberzone.github.io/Settings_API/). To do it by hand, follow the steps below.
+
 ## Including this in your plugin
 
 ### 1. Copy the files

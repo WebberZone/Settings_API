@@ -11,7 +11,7 @@ order: 2
 
 `Settings_Form` (`settings/class-settings-form.php`) holds one `callback_*` method per field type. `Settings_API::admin_init()` wires each registered field to the matching callback, and every callback runs its HTML through the `{$prefix}_after_setting_output` filter before echoing.
 
-An unrecognised `type` falls through to `callback_missing()`, which prints a notice naming the field — useful when a typo silently drops a setting.
+An unrecognised `type` falls through to `callback_missing()`, which prints a notice naming the field — useful when a typo silently drops a setting. On save, the same unknown type falls back to `Settings_Sanitize::sanitize_missing()`, so nothing is stored raw.
 
 ## Text and text-like
 
@@ -22,11 +22,11 @@ An unrecognised `type` falls through to `callback_missing()`, which prints a not
 | `csv` | Single-line input | A comma-separated list of strings; each item is trimmed. |
 | `numbercsv` | Single-line input | A comma-separated list of numbers. |
 | `postids` | Single-line input | A comma-separated list of post IDs. Renders as `text`. |
-| `password` | Password input | Stored as entered — no sanitizer is registered for this type. Use `sensitive` for API keys. |
+| `password` | Password input | Sanitized with `sanitize_text_field()`. Use `sensitive` for API keys. |
 | `sensitive` | Password-style input | Value is encrypted at rest and masked in the UI, showing only the last four characters. |
 | `number` | Number input | Uses `min`, `max`, and `step`. |
 | `color` | Colour picker | Adds the `color-field` class and enqueues `wp-color-picker`. |
-| `file` | Input plus a **Choose File** button | Opens the media uploader. Override the button label with `'options' => array( 'button_label' => … )`. No sanitizer is registered for this type — declare a `sanitize_callback`. |
+| `file` | Input plus a **Choose File** button | Opens the media uploader. Override the button label with `'options' => array( 'button_label' => … )`. Sanitized with `esc_url_raw()`. |
 
 ## Multi-line
 
@@ -44,9 +44,9 @@ An unrecognised `type` falls through to `callback_missing()`, which prints a not
 | `checkbox` | A toggle switch | Saves `1` or `0`. Add the `no-toggle` field class to render a plain checkbox instead. |
 | `toggle` | Same as `checkbox` | An explicit alias, for readability in field definitions. |
 | `multicheck` | A list of checkboxes | `options` is `value => label`. Saved as a comma-separated list of the checked keys. |
-| `radio` | A list of radio buttons | `options` is `value => label`. |
-| `radiodesc` | Radio buttons with descriptions | `options` is a list of arrays with `id`, `name`, and `description`. |
-| `select` | Dropdown | `options` is `value => label`. Setting any `chosen` key adds the legacy `chosen` class. For a searchable Tom Select control, add `'field_class' => 'ts_autocomplete'`. |
+| `radio` | A list of radio buttons | `options` is `value => label`; validated against that list on save. |
+| `radiodesc` | Radio buttons with descriptions | `options` is a list of arrays with `id`, `name`, and `description`; the `id` values are what save validates against. |
+| `select` | Dropdown | `options` is `value => label`; a value outside that list falls back to the field's `default` on save. Setting any `chosen` key adds the legacy `chosen` class. For a searchable Tom Select control, add `'field_class' => 'ts_autocomplete'`. |
 | `posttypes` | Checkbox list of public post types | Saved as a comma-separated list of post-type slugs. |
 | `taxonomies` | Checkbox list of public taxonomies | Saved as a comma-separated list of taxonomy slugs. |
 | `thumbsizes` | Radio list of registered image sizes | Each option shows its dimensions and crop flag. |
@@ -98,4 +98,5 @@ Each row carries a hidden `row_id` so rows stay identifiable across saves and re
 
 - `field_class` adds CSS classes; each class is passed through `sanitize_html_class()`.
 - `field_attributes` renders arbitrary HTML attributes as `attribute => value`.
+- Every field type has a sanitizer as of Settings API 3.0.0; see the [sanitization reference]({{ '/docs/02-wzsa-core-classes/sanitization-reference/' | relative_url }}).
 - Setting `pro => true` disables the input the same way `disabled => true` does, and both are returned by `get_locked_settings()` so that the saved value survives a submit in which the input was never posted.

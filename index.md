@@ -5,6 +5,11 @@ permalink: /
 ---
 
 <div class="hero">
+  <button type="button" class="agent-pill" data-agent-prompt="Fetch and execute the appropriate instructions to set up the WebberZone Settings API in my plugin from https://webberzone.github.io/Settings_API/prompt.md">
+    <span class="agent-pill-label">Set up the Settings API with your coding agent</span>
+    <svg class="agent-pill-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    <svg class="agent-pill-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+  </button>
   <div class="eyebrow">Free &middot; Open Source &middot; Copy &amp; Own</div>
   <h1>WordPress settings pages, <em>without the boilerplate</em></h1>
   <p class="lead">The WebberZone Settings API wraps the native WordPress Settings API in a configuration-driven layer: declare your fields once as an array, and get a tabbed settings page, sanitization, defaults, metaboxes, and a setup wizard for free.</p>
@@ -13,6 +18,7 @@ permalink: /
     <a href="https://github.com/WebberZone/Settings_API" target="_blank" class="btn-outline">View on GitHub</a>
     <a href="{{ '/docs/01-wzsa-getting-started/integrating-the-settings-api/' | relative_url }}" class="btn-outline">Integration Guide</a>
   </div>
+  <p class="agent-prompt">Fetch and execute the appropriate instructions to set up the WebberZone Settings API in my plugin from <a href="{{ '/prompt.md' | relative_url }}">https://webberzone.github.io/Settings_API/prompt.md</a></p>
 </div>
 
 <div class="home-section">
@@ -90,3 +96,45 @@ permalink: /
     </a>
   </div>
 </div>
+
+<script>
+(function () {
+  var pill = document.querySelector('.agent-pill');
+  if (!pill) { return; }
+
+  var label = pill.querySelector('.agent-pill-label');
+  var original = label.textContent;
+  var prompt = pill.getAttribute('data-agent-prompt');
+  var timer;
+
+  function done() {
+    label.textContent = 'Copied \u2014 paste it into your agent';
+    pill.classList.add('is-copied');
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      label.textContent = original;
+      pill.classList.remove('is-copied');
+    }, 2600);
+  }
+
+  function fallback() {
+    var field = document.createElement('textarea');
+    field.value = prompt;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.opacity = '0';
+    document.body.appendChild(field);
+    field.select();
+    try { document.execCommand('copy'); done(); } catch (e) { window.prompt('Copy this prompt:', prompt); }
+    document.body.removeChild(field);
+  }
+
+  pill.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(prompt).then(done, fallback);
+    } else {
+      fallback();
+    }
+  });
+}());
+</script>
