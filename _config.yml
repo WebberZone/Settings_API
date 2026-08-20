@@ -1,0 +1,39 @@
+title: WebberZone Settings API
+description: Documentation for the WebberZone Settings API — a reusable PHP library for building tabbed WordPress settings pages, metaboxes, and setup wizards.
+url: https://webberzone.github.io
+baseurl: /Settings_API
+
+plugin_name: WebberZone Settings API
+plugin_slug: Settings_API
+
+permalink: pretty
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+defaults:
+  - scope:
+      path: "docs"
+    values:
+      layout: doc
+
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: default
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - settings
+  - util
+  - css
+  - LICENSE
+  - "*.php"
+  - "*.dist"
+  - README.md
+  - AGENTS.md
+  - CLAUDE.md

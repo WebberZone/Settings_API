@@ -1,73 +1,183 @@
 # WebberZone Settings API
 
-A reusable, namespaced wrapper around the native [WordPress Settings API](https://developer.wordpress.org/plugins/settings/settings-api/) that powers the admin interfaces across WebberZone plugins. It ships with opinionated helpers for:
+A reusable, namespaced wrapper around the native [WordPress Settings API](https://developer.wordpress.org/plugins/settings/settings-api/) that powers the admin interfaces across WebberZone plugins. Declare your fields once as a PHP array and get a tabbed settings page, sanitization, defaults, metaboxes, and an optional setup wizard.
 
-- Building tabbed settings pages with reusable field renderers.
-- Managing sanitization, defaults, upgrades, and Help tabs from a single configuration array.
-- Rendering meta boxes that reuse the same field definitions as your settings screens.
-- Providing setup wizards, CSS/JS assets, and an extendable Hook Registry utility.
+Full documentation: <https://webberzone.github.io/Settings_API/>
 
-Use the package as-is or as a reference implementation when building complex plugin settings screens.
+This is **not** a Composer package. There is no build system and no `composer.json`. You copy the files into your plugin, rename the namespace, and own the copy you ship.
 
 ## Repository structure
 
 ```text
 Settings_API/
-├── class-options-api.php        # Canonical settings read/write layer (blog-aware cache)
-├── class-settings.php           # Example settings-controller implementation
-├── class-metabox.php            # Example post meta box integration
-├── sidebar.php                  # Default help/CTA sidebar partial
+├── class-options-api.php         # Canonical settings read/write layer (copy near-verbatim)
+├── class-settings.php            # Example settings controller (copy and customise)
+├── class-metabox.php             # Example post-metabox integration
+├── class-admin.php               # Example admin bootstrap wiring the banner
+├── class-admin-banner.php        # Reusable admin banner / quick-links header
+├── sidebar.php                   # Sidebar partial shown on settings pages
+├── css/                          # Admin banner styles (+ RTL and .min variants)
 ├── util/
-│   └── class-hook-registry.php  # Lightweight registry for actions/filters
+│   └── class-hook-registry.php   # Deduplicating wrapper around add_action / add_filter
 └── settings/
-    ├── class-settings-api.php        # Core Settings API wrapper
-    ├── class-settings-form.php       # Field renderer callbacks
-    ├── class-settings-sanitize.php   # Sanitization helpers per field type
+    ├── class-settings-api.php        # Core orchestrator — menus, sections, fields, encryption
+    ├── class-settings-form.php       # Field renderers, one callback per field type
+    ├── class-settings-sanitize.php   # Sanitization callbacks matched by field type
     ├── class-settings-wizard-api.php # Optional multi-step setup wizard
-    ├── class-metabox-api.php         # Meta box helper using the same fields
-    ├── css/                          # Admin styles (tabs, wizard, RTL variants)
-    └── js/                           # Admin scripts (media, CodeMirror glue, etc.)
+    ├── class-metabox-api.php         # Post-metabox helper using the same field arrays
+    ├── sidebar.php                   # Inner sidebar partial
+    ├── css/                          # admin-style, wizard, tom-select (+ RTL + .min)
+    └── js/                           # settings-admin-scripts, apply-cm, media-selector,
+                                      # tom-select-init, tom-select.complete (+ .min)
 ```
 
-Everything is namespaced under `WebberZone\Settings_API\Admin` (or `...\Admin\Settings`). Update the namespace to match your plugin if you integrate the code directly into your project root.
+## Including this in your plugin
 
-## Getting started
+### 1. Copy the files
 
-1. **Copy the files.** Bring the entire `settings` directory plus the example `class-settings.php`, `class-metabox.php`, `sidebar.php`, and `util/class-hook-registry.php` into your plugin (adjust paths to suit your structure).
-2. **Autoload the classes.** Either map the `WebberZone\Settings_API` namespace via Composer/PSR-4 or `require_once` the files before usage.
-3. **Update identifiers.** Replace the sample prefix (`ata`), option key (`ata_settings`), text domain (`add-to-all`), post types, and URLs with values from your plugin.
-4. **Wire into WordPress.** Instantiate your customized `Settings` class on `plugins_loaded`/`admin_init` so it can register menus, fields, and assets:
+Bring the following into your plugin, keeping the relative layout:
 
-   ```php
-   add_action( 'plugins_loaded', function () {
-       $settings = new \WebberZone\Settings_API\Admin\Settings();
-       $settings->initialise_settings();
-   } );
-   ```
+| From | Typical destination |
+|---|---|
+| `settings/` (classes, `css/`, `js/`, `sidebar.php`) | `includes/admin/settings/` |
+| `class-settings.php`, `class-metabox.php`, `sidebar.php` | `includes/admin/` |
+| `class-options-api.php` | `includes/` |
+| `util/class-hook-registry.php` | `includes/util/` |
+| `class-admin.php`, `class-admin-banner.php`, `css/` | `includes/admin/` — only if you want the banner |
 
-5. **Hook sanitization + upgrades.** Each settings prefix registers filters such as `{$prefix}_settings_sanitize` and `{$prefix}_translation_strings` so your plugin can inject or adjust data.
+### 2. Rename the namespace
 
-## Customising the example settings class
+Replace `WebberZone\Settings_API` with your plugin's root namespace throughout:
 
-`class-settings.php` is a full implementation showing how to:
+| File | Namespace to rename |
+|---|---|
+| `settings/*.php` | `WebberZone\Settings_API\Admin\Settings` |
+| `class-settings.php`, `class-metabox.php`, `class-admin.php`, `class-admin-banner.php` | `WebberZone\Settings_API\Admin` |
+| `class-options-api.php` | `WebberZone\Settings_API` |
+| `util/class-hook-registry.php` | `WebberZone\Settings_API\Util` |
 
-- Define translation strings, admin menus, sections, and fields via dedicated methods.
-- Inject the `Settings_API` class with arrays generated by those methods.
-- Extend the UI with help tabs, contextual sidebars, and custom admin footer text.
+Autoload the classes with a PSR-4 map in `composer.json`, or `require_once` them before first use.
 
-Copy the class into your plugin’s namespace, rename the class (e.g. `Settings` → `Plugin_Settings`), and edit the arrays returned by methods such as `get_registered_settings()` to match your data.
+### 3. Update the identifiers
 
-## Using the Metabox API
+The example files ship with the sample identifiers used by Add to All. Replace them everywhere:
 
-`class-metabox.php` and `settings/class-metabox-api.php` illustrate how to reuse the same field definitions within meta boxes. Supply the field array via `get_registered_settings()` and the API will render/save the data with nonce and capability checks.
+| What | Sample value | Replace with |
+|---|---|---|
+| Hook prefix | `ata` | Your plugin prefix, e.g. `crp`, `bsearch` |
+| Option key | `ata_settings` | Your option name |
+| Text domain | `add-to-all` | Your text domain |
+| Menu slug | `ata_options_page` | Your menu slug |
 
-## Sidebar partial
+`class-options-api.php` holds two of these as constants:
 
-The repo includes two sidebar templates (`sidebar.php` at the root and `settings/sidebar.php`). Replace the copy with content relevant to your plugin (support links, upsells, etc.) and include it through the `help_sidebar` argument passed to `Settings_API`.
+```php
+const SETTINGS_OPTION = 'my_plugin_settings';
+const FILTER_PREFIX   = 'my_plugin';
+```
 
-## Contributing / support
+### 4. Define your settings
 
-- Issues & PRs: [https://github.com/WebberZone/Settings_API](https://github.com/WebberZone/Settings_API)
-- Documentation & usage examples live across WebberZone plugins such as Better Search, Contextual Related Posts, and Knowledge Base.
+Implement `get_registered_settings()` in your copied `Settings` class. Fields are keyed by section (tab), then by field ID:
 
-If you ship this code in your plugin, please keep the copyright headers intact and share improvements back via pull requests.
+```php
+'general' => array(
+    'enabled' => array(
+        'id'      => 'enabled',
+        'name'    => esc_html__( 'Enable the widget', 'my-plugin' ),
+        'desc'    => esc_html__( 'Adds the widget below every post.', 'my-plugin' ),
+        'type'    => 'checkbox',
+        'default' => 1,
+    ),
+    'limit'   => array(
+        'id'      => 'limit',
+        'name'    => esc_html__( 'Number of items', 'my-plugin' ),
+        'type'    => 'number',
+        'min'     => 1,
+        'max'     => 50,
+        'size'    => 'small',
+        'default' => 6,
+    ),
+),
+```
+
+26 field types are available — text, url, csv, numbercsv, postids, color, number, textarea, css, html, wysiwyg, checkbox, toggle, multicheck, radio, radiodesc, select, posttypes, taxonomies, thumbsizes, file, password, sensitive, repeater, header, and descriptive_text. See the [field types reference](https://webberzone.github.io/Settings_API/docs/02-wzsa-core-classes/field-types-reference/).
+
+### 5. Instantiate the Settings API
+
+```php
+add_action(
+    'admin_menu',
+    function () {
+        $settings = new \My_Plugin\Admin\Settings();
+        $settings->initialise_settings();
+    }
+);
+```
+
+Inside `initialise_settings()`:
+
+```php
+$this->settings_api = new Settings\Settings_API(
+    $this->settings_key,
+    self::$prefix,
+    array(
+        'translation_strings' => $this->get_translation_strings(),
+        'settings_sections'   => self::get_settings_sections(),
+        'registered_settings' => self::get_registered_settings(),
+        'upgraded_settings'   => array(),
+        'props'               => array(
+            'menus'             => $this->get_menus(),
+            'default_tab'       => 'general',
+            'admin_footer_text' => $this->get_admin_footer_text(),
+            'help_sidebar'      => $this->get_help_sidebar(),
+            'help_tabs'         => $this->get_help_tabs(),
+            'version'           => MY_PLUGIN_VERSION,
+        ),
+    )
+);
+```
+
+Pass your **plugin's own version** as `props['version']` — it cache-busts the enqueued CSS and JS on every release.
+
+### 6. Keep the defaults array in sync
+
+`Settings::get_defaults()` is the single source of truth for defaults and must mirror what `settings_defaults()` emits. It carries no translation calls, so an option read is safe before `init`. Four rules apply, and none of them are caught by phpcs or phpstan — read [the defaults contract](https://webberzone.github.io/Settings_API/docs/02-wzsa-core-classes/the-defaults-contract/) before shipping.
+
+### 7. Expose a getter
+
+Give the rest of your plugin one stable entry point instead of touching the option directly:
+
+```php
+function my_plugin_get_option( $key = '', $default_value = null ) {
+    return \My_Plugin\Options_API::get_option( $key, $default_value );
+}
+```
+
+Passing an explicit second argument short-circuits the default lookup, which is how a translated or computed default is handled:
+
+```php
+$title = my_plugin_get_option( 'toc_title', __( 'Table of Contents', 'my-plugin' ) );
+```
+
+## Optional extras
+
+| Feature | What to add | Docs |
+|---|---|---|
+| Post metaboxes | `Metabox_API` with the same field arrays; values save to `_{$prefix}_{$field_id}` post meta | [Metabox API](https://webberzone.github.io/Settings_API/docs/03-wzsa-extending/metabox-api/) |
+| Setup wizard | `Settings_Wizard_API` with a `steps` array | [Setup wizard](https://webberzone.github.io/Settings_API/docs/03-wzsa-extending/setup-wizard-api/) |
+| Admin banner | `Admin_Banner` with quick links, hooked to `in_admin_header` | [Admin banner](https://webberzone.github.io/Settings_API/docs/03-wzsa-extending/admin-banner/) |
+| Duplicate-safe hooks | `Hook_Registry::add_action()` / `add_filter()` | [Hook Registry](https://webberzone.github.io/Settings_API/docs/03-wzsa-extending/hook-registry/) |
+
+Every hook the library fires is namespaced with your prefix — `{$prefix}_settings_sanitize`, `{$prefix}_after_setting_output`, `{$prefix}_settings_defaults`, and the rest are listed in the [hooks and filters reference](https://webberzone.github.io/Settings_API/docs/03-wzsa-extending/hooks-and-filters-reference/).
+
+## Keeping your copy up to date
+
+Because the library is copy-pasted, upstream fixes have to be propagated by hand. This repository is canonical for `settings/*.php` and `class-admin-banner.php`. Shared PHP is never byte-identical — namespaces and per-plugin `@since` tags differ — but the CSS and JS should be.
+
+## Contributing & support
+
+- Issues and pull requests: <https://github.com/WebberZone/Settings_API>
+- Working implementations live across WebberZone plugins such as Better Search, Contextual Related Posts, Knowledge Base, and Top 10.
+
+If you ship this code in your plugin, please keep the copyright headers intact and send improvements back as pull requests.

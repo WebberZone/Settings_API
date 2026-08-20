@@ -7,3 +7,8 @@
 
 # Testing
 /.playwright-mcp
+
+# Jekyll
+_site/
+.jekyll-cache/
+.jekyll-metadata

@@ -1,0 +1,28 @@
+<aside class="sidebar">
+  <ul style="margin-bottom: 4px;">
+    <li><a href="{{ '/docs/' | relative_url }}"{% if page.url == '/docs/' %} class="active"{% endif %}>Docs Home</a></li>
+  </ul>
+  {% assign docs = site.pages | where_exp: "p", "p.path contains 'docs/'" | where_exp: "p", "p.name != 'index.md'" | sort: 'path' %}
+  {% assign ordered = docs | sort: 'order' %}
+  {% assign sections = "" | split: "" %}
+  {% for doc in docs %}
+    {% assign parts = doc.path | split: "/" %}
+    {% assign section = parts[1] %}
+    {% unless sections contains section %}
+      {% assign sections = sections | push: section %}
+    {% endunless %}
+  {% endfor %}
+
+  {% for section in sections %}
+    {% assign label = section | split: "-" | shift | shift | join: " " | capitalize %}
+    <h4>{{ label }}</h4>
+    <ul>
+      {% for doc in ordered %}
+        {% assign parts = doc.path | split: "/" %}
+        {% if parts[1] == section %}
+          <li><a href="{{ doc.url | relative_url }}"{% if doc.url == page.url %} class="active"{% endif %}>{{ doc.title }}</a></li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endfor %}
+</aside>
