@@ -62,7 +62,7 @@ array(
 
 | Method | Purpose |
 |---|---|
-| `admin_init()` | Calls `register_setting()` and `add_settings_field()` for every declared field, wiring each to the matching `Settings_Form::callback_*` method. |
+| `admin_init()` | Calls `register_setting()` and `add_settings_field()` for every declared field, wiring each to the matching `Settings_Form::callback_*` method. See [how the option is registered](#how-the-option-is-registered). |
 | `settings_defaults()` | Builds the default value array from the field definitions. |
 | `get_default_option( $key )` | Returns a single default. |
 | `settings_sanitize( $input )` | Runs on save. Builds the output from the stored option and delegates per-field sanitization to `Settings_Sanitize`, including for keys added by the tab filter. |
@@ -72,6 +72,52 @@ array(
 | `show_navigation()` / `show_form()` | Render the tab strip and the active tab's form. |
 | `parse_field_args( $field, $section )` | Fills in field defaults; also used by the wizard and metabox APIs. |
 | `enqueue_scripts_styles( $prefix, $args )` | Static. Enqueues the shared admin assets for a given prefix. |
+
+## How the option is registered
+
+Every field lives in a single option, registered once from `admin_init()`:
+
+```php
+register_setting(
+    $settings_key,
+    $settings_key,
+    array(
+        'type'              => 'object',
+        'default'           => $this->settings_defaults(),
+        'sanitize_callback' => array( $this, 'settings_sanitize' ),
+        'show_in_rest'      => false,
+    )
+);
+```
+
+`type` here is a **JSON Schema** type, not a PHP one. JSON Schema splits what PHP calls an array into two: `array` is an ordered list described by `items`, while `object` is a keyed map described by `properties`. The settings value is a map of named keys whose values each mean something different, so `object` is the correct type — `array` would claim every element follows one rule, which is wrong on both counts.
+
+Because `sanitize_callback` is registered as a filter on `sanitize_option_{$option}`, it also runs when the option is written through `update_option()`, not only when the settings form is submitted.
+
+### `show_in_rest` is off as of 3.0.0
+
+Earlier versions passed `'show_in_rest' => true` with no schema. That never worked as intended: with no `type` declared, WordPress registered the option as a `string`, and `WP_REST_Settings_Controller::get_registered_options()` skips an `object` or `array` that supplies no `properties` or `items`. `settings_sanitize()` also reads `$_POST` to resolve the active tab, which a REST write does not provide.
+
+The option is therefore no longer exposed at `/wp/v2/settings`. **If you were reading or writing your settings through that endpoint, this is a breaking change.** To expose it deliberately, register a real schema and make your sanitize callback safe for non-form writes:
+
+```php
+add_filter( 'register_setting_args', function ( $args, $defaults, $option_group, $option_name ) {
+    if ( 'my_plugin_settings' !== $option_name ) {
+        return $args;
+    }
+
+    $args['show_in_rest'] = array(
+        'schema' => array(
+            'type'       => 'object',
+            'properties' => array(
+                'my_field' => array( 'type' => 'string' ),
+            ),
+        ),
+    );
+
+    return $args;
+}, 10, 4 );
+```
 
 ## Encryption helpers
 
