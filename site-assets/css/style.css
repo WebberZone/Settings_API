@@ -71,6 +71,7 @@ a:hover { color: var(--wz-teal-dark); }
 ul, ol { padding-left: 1.4rem; margin-bottom: 1rem; }
 li { margin-bottom: .3rem; }
 table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+.content table code, .content table a { overflow-wrap: anywhere; }
 th, td { border: 1px solid var(--wz-card-border); padding: 8px 12px; text-align: left; }
 th { background: var(--wz-stone); }
 
@@ -304,8 +305,6 @@ footer a:hover { color: var(--wz-off-white); }
   .nav-links { display: none; }
   .page-wrap { grid-template-columns: 1fr; padding: 32px 20px 56px; }
   .sidebar { position: static; }
-  .content table { display: block; overflow-x: auto; }
-  .content code { overflow-wrap: anywhere; }
 }
 
 /* ══════════════════════════════════════
