@@ -304,6 +304,8 @@ footer a:hover { color: var(--wz-off-white); }
   .nav-links { display: none; }
   .page-wrap { grid-template-columns: 1fr; padding: 32px 20px 56px; }
   .sidebar { position: static; }
+  .content table { display: block; overflow-x: auto; }
+  .content code { overflow-wrap: anywhere; }
 }
 
 /* ══════════════════════════════════════
