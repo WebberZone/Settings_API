@@ -16,7 +16,6 @@ if ( ! defined( 'WPINC' ) ) {
 
 /**
  * Settings Sanitize Class.
- *
  */
 class Settings_Sanitize {
 
