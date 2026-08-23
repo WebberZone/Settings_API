@@ -2,13 +2,8 @@
 /**
  * Options API.
  *
- * Canonical implementation of the settings read/write layer that sits in front of
- * the Settings API. Copy this file into your plugin, update the namespace, the
- * `SETTINGS_OPTION` and `FILTER_PREFIX` constants, and the `Admin\Settings`
- * import.
- *
- * @link  https://webberzone.com
- * @since 1.0.0
+ * Settings read/write layer that sits in front of the Settings API. Reads are cached
+ * per request and keyed by blog ID so a `switch_to_blog()` mid-request is honoured.
  *
  * @package WebberZone\Settings_API
  */
