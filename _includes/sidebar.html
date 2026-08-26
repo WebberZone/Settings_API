@@ -2,7 +2,7 @@
   <ul style="margin-bottom: 4px;">
     <li><a href="{{ '/docs/' | relative_url }}"{% if page.url == '/docs/' %} class="active"{% endif %}>Docs Home</a></li>
   </ul>
-  {% assign docs = site.pages | where_exp: "p", "p.path contains 'docs/'" | where_exp: "p", "p.name != 'index.md'" | sort: 'path' %}
+  {% assign docs = site.pages | where_exp: "p", "p.path contains 'docs/'" | where_exp: "p", "p.name != 'index.html'" | sort: 'path' %}
   {% assign ordered = docs | sort: 'order' %}
   {% assign sections = "" | split: "" %}
   {% for doc in docs %}
