@@ -17,7 +17,7 @@ Four rules govern the array. Breaking any of them produces a defect that phpcs, 
 
 Nothing in the array may translate, and nothing it calls may translate transitively. Avoiding the translation stack is the entire reason the array exists.
 
-## 2. Values are pre-normalised
+## 2. Values are pre-normalized
 
 Each value must already match what `settings_defaults()` emits **after** its casts. Checkbox defaults are `1` and `0`, never `true` and `false`. A `false` where the saved default is `0` breaks block attributes and REST schemas typed as `number`.
 
@@ -37,13 +37,13 @@ A default that must be translated or computed at runtime cannot live in the arra
 $title = my_plugin_get_option( 'toc_title', __( 'Table of Contents', 'my-plugin' ) );
 ```
 
-## Initialise `$prefix` at declaration
+## Initialize `$prefix` at declaration
 
 ```php
 public static $prefix = 'my_plugin';
 ```
 
-`Settings::$prefix` must be initialised where it is declared, not only in the constructor. The static methods are reachable on the frontend, where the `Settings` object is never instantiated, and a null prefix there fires `_settings_defaults` instead of `{$prefix}_settings_defaults`.
+`Settings::$prefix` must be initialized where it is declared, not only in the constructor. The static methods are reachable on the frontend, where the `Settings` object is never instantiated, and a null prefix there fires `_settings_defaults` instead of `{$prefix}_settings_defaults`.
 
 ## Verifying the invariant
 

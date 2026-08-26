@@ -26,7 +26,7 @@ Every callback receives the field configuration as its second argument, which is
 
 ## Callbacks by type
 
-| Method | Applies to | Behaviour |
+| Method | Applies to | Behavior |
 |---|---|---|
 | `sanitize_text_field()` | `text`, and most text-like types | Delegates to `sanitize_textarea_field()`. |
 | `sanitize_textarea_field()` | `textarea`, `css`, `html`, `wysiwyg` | `wp_kses()` against `$allowedposttags` extended with `script`, `style`, and `link` tags, filterable via `{$prefix}_sanitize_allowed_tags`. |
@@ -60,7 +60,7 @@ Every callback receives the field configuration as its second argument, which is
 
 ## Helper
 
-`sanitize_tax_slugs( &$settings, $source_key, $target_key )` is a static helper for taxonomy pickers. It parses values in the `Name (taxonomy:term_taxonomy_id)` format, resolves each to a real term, and writes the term taxonomy IDs into `$target_key` while normalising the display slugs in `$source_key`. Plain category names are still accepted for backwards compatibility.
+`sanitize_tax_slugs( &$settings, $source_key, $target_key )` is a static helper for taxonomy pickers. It parses values in the `Name (taxonomy:term_taxonomy_id)` format, resolves each to a real term, and writes the term taxonomy IDs into `$target_key` while normalizing the display slugs in `$source_key`. Plain category names are still accepted for backwards compatibility.
 
 ## Overriding a sanitizer
 

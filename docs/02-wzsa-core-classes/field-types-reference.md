@@ -25,7 +25,7 @@ An unrecognised `type` falls through to `callback_missing()`, which prints a not
 | `password` | Password input | Sanitized with `sanitize_text_field()`. Use `sensitive` for API keys. |
 | `sensitive` | Password-style input | Value is encrypted at rest and masked in the UI, showing only the last four characters. |
 | `number` | Number input | Uses `min`, `max`, and `step`. |
-| `color` | Colour picker | Adds the `color-field` class and enqueues `wp-color-picker`. |
+| `color` | Color picker | Adds the `color-field` class and enqueues `wp-color-picker`. |
 | `file` | Input plus a **Choose File** button | Opens the media uploader. Override the button label with `'options' => array( 'button_label' => … )`. Sanitized with `esc_url_raw()`. |
 
 ## Multi-line
@@ -94,7 +94,7 @@ An unrecognised `type` falls through to `callback_missing()`, which prints a not
 
 Each row carries a hidden `row_id` so rows stay identifiable across saves and reordering. Sub-field HTML can be filtered with `{$prefix}_repeater_field_{$type}`.
 
-## Shared behaviour
+## Shared behavior
 
 - `field_class` adds CSS classes; each class is passed through `sanitize_html_class()`.
 - `field_attributes` renders arbitrary HTML attributes as `attribute => value`.
