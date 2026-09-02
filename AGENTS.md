@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+This file provides guidance to AI coding agents working with code in this repository.
 
 ## Response Rules
 
@@ -18,9 +18,9 @@ Not a standalone WordPress plugin — no WordPress.org listing or webberzone.com
 
 ## What this library is
 
-WebberZone Settings API is a reusable PHP library that wraps the native WordPress Settings API. It powers the admin interfaces across WebberZone plugins (Better Search, Contextual Related Posts, Knowledge Base, etc.). It is not distributed as a Composer package — consuming plugins copy the files directly into their own source tree and adjust the namespace, prefix, and option key to match the plugin.
+WebberZone Settings API is a reusable PHP library wrapping the native WordPress Settings API, powering admin interfaces across WebberZone plugins (Better Search, Contextual Related Posts, Knowledge Base, etc.). Not distributed as a Composer package — consuming plugins copy the files into their own source tree, adjusting namespace, prefix, and option key.
 
-There is no `composer.json`, `package.json`, or build system in this repository. CSS and JS assets are committed as both source and pre-minified files. There are no automated tests.
+No `composer.json`, `package.json`, or build system. CSS/JS assets are committed as both source and pre-minified files. No automated tests.
 
 ## Repository structure
 
@@ -56,13 +56,13 @@ Settings_API/
 | `class-options-api.php` | `WebberZone\Settings_API` |
 | `util/class-hook-registry.php` | `WebberZone\Settings_API\Util` |
 
-When copying the library into a plugin, rename the root namespace segment (`WebberZone\Settings_API`) to match the plugin's own namespace.
+When copying into a plugin, rename the root namespace segment (`WebberZone\Settings_API`) to match the plugin's.
 
 ## Key classes and responsibilities
 
 ### `Settings_API` (`settings/class-settings-api.php`) — version 2.9.0
 
-The main entry point. Constructed with a `$settings_key` (WordPress option name), a `$prefix` (used to namespace all hooks and JS handles), and an `$args` array containing sections, registered settings, and presentation props.
+Main entry point. Constructed with `$settings_key` (WordPress option name), `$prefix` (namespaces hooks and JS handles), and `$args` (sections, registered settings, presentation props).
 
 Responsibilities:
 
@@ -77,43 +77,43 @@ Responsibilities:
 
 ### `Options_API` (`class-options-api.php`)
 
-The settings read/write layer every plugin exposes to its own code, and the counterpart to the procedural `*_get_option()` helpers. Unlike the example controller, this one is meant to be copied close to verbatim — change only the namespace, `SETTINGS_OPTION`, and `FILTER_PREFIX`.
+The settings read/write layer each plugin exposes to its own code; counterpart to the procedural `*_get_option()` helpers. Unlike the example controller, copy this close to verbatim — change only the namespace, `SETTINGS_OPTION`, and `FILTER_PREFIX`.
 
 Provides `get_settings()`, `get_settings_with_defaults()`, `get_option()`, `get_blog_option()`, `update_option()`, `update_settings()`, `delete_option()`, `get_settings_defaults()`, `get_default_option()`, `get_registered_settings_types()`, `reset_settings()`, and `flush_cache()`.
 
-The per-request cache is **keyed by blog ID**, not a single static array. An unkeyed cache returns the wrong blog's settings after a `switch_to_blog()` in the same request — which is exactly what `get_blog_option()` does internally, and what network admin screens do in a loop. On single site the key is always `0`.
+The per-request cache is **keyed by blog ID**, not a single static array — an unkeyed cache returns the wrong blog's settings after `switch_to_blog()` in the same request, which is what `get_blog_option()` does internally and what network admin screens do in a loop. On single site the key is always `0`.
 
-`get_default_option()` reads `Settings::get_defaults()`; `get_settings_defaults()` reads `Settings::settings_defaults()`. See the defaults contract below for why they are separate.
+`get_default_option()` reads `Settings::get_defaults()`; `get_settings_defaults()` reads `Settings::settings_defaults()` — see the defaults contract below for why they're separate.
 
 ### `Settings_Form` (`settings/class-settings-form.php`)
 
-Holds one `callback_*` method for each field type. `Settings_API::admin_init()` wires each registered field to the appropriate callback. Field types supported:
+Holds one `callback_*` method per field type; `Settings_API::admin_init()` wires each registered field to its callback. Field types supported:
 
 `text`, `url`, `csv`, `color`, `numbercsv`, `postids`, `textarea`, `css`, `html`, `checkbox`, `multicheck`, `radio`, `radiodesc`, `thumbsizes`, `number`, `select`, `posttypes`, `taxonomies`, `wysiwyg`, `file`, `password`, `repeater`, `sensitive`, `header`, `descriptive_text`
 
-The `repeater` type renders an accordion-style list of sub-fields with add/remove/reorder controls and a live-title update, all driven by inline jQuery.
+The `repeater` type renders an accordion-style sub-field list with add/remove/reorder controls and a live-title update, driven by inline jQuery.
 
 Every callback applies the `{$prefix}_after_setting_output` filter before echoing.
 
 ### `Settings_Sanitize` (`settings/class-settings-sanitize.php`)
 
-Provides one `sanitize_*_field()` method per field type. `Settings_API::get_sanitize_callback()` looks up the right method by field type at save time. Handles text, number, CSV, numbercsv, postids, textarea, checkbox, multicheck, posttypes, taxonomies, color, email, URL, sensitive (encrypts via `Settings_API::encrypt_api_key()`), and repeater (recursively sanitizes sub-fields).
+Provides one `sanitize_*_field()` method per field type; `Settings_API::get_sanitize_callback()` looks up the method by field type at save time. Handles text, number, CSV, numbercsv, postids, textarea, checkbox, multicheck, posttypes, taxonomies, color, email, URL, sensitive (encrypts via `Settings_API::encrypt_api_key()`), and repeater (recursively sanitizes sub-fields).
 
 ### `Settings_Wizard_API` (`settings/class-settings-wizard-api.php`)
 
-Optional multi-step guided setup wizard. Constructed with the same `$settings_key` / `$prefix` pattern plus a `$steps` array. Registers its own admin page, renders step navigation, and saves each step's fields directly into the plugin's options via `Settings_Sanitize`. Shares the same CSS asset (`wizard.css`).
+Optional multi-step guided setup wizard. Constructed with the same `$settings_key`/`$prefix` pattern plus a `$steps` array; registers its own admin page, renders step navigation, and saves each step's fields into the plugin's options via `Settings_Sanitize`. Shares the CSS asset `wizard.css`.
 
 ### `Metabox_API` (`settings/class-metabox-api.php`)
 
-Renders a standard WordPress post metabox using the same field-definition array format as `Settings_API`. Each field value is stored as individual post meta with the key `_{$prefix}_{$field_id}`. Handles nonce verification and capability checks on save.
+Renders a standard WordPress post metabox using the same field-definition array format as `Settings_API`. Each field value is stored as individual post meta keyed `_{$prefix}_{$field_id}`. Handles nonce verification and capability checks on save.
 
 ### `Hook_Registry` (`util/class-hook-registry.php`)
 
-Static registry that wraps `add_action` / `add_filter` and prevents duplicate registrations. Used by the example `Settings` and `Metabox` classes. Provides `register()`, `add_action()`, `add_filter()`, `remove()`, `remove_action()`, `remove_filter()`, `get_hooks()`, and `remove_all_hooks()`.
+Static registry wrapping `add_action`/`add_filter` to prevent duplicate registrations. Used by the example `Settings` and `Metabox` classes. Provides `register()`, `add_action()`, `add_filter()`, `remove()`, `remove_action()`, `remove_filter()`, `get_hooks()`, and `remove_all_hooks()`.
 
 ### `Settings` (`class-settings.php`) and `Metabox` (`class-metabox.php`)
 
-These are **example/reference implementations**, not part of the library core. Each consuming plugin copies one or both, renames the class, and fills in `get_registered_settings()`, menu slugs, prefix, and option key.
+**Example/reference implementations**, not part of the library core. Each consuming plugin copies one or both, renames the class, and fills in `get_registered_settings()`, menu slugs, prefix, and option key.
 
 ## How consuming plugins integrate the library
 
@@ -139,24 +139,24 @@ add_action( 'admin_menu', function() {
 
 ## Defaults contract
 
-`Settings::get_defaults()` is the single source of truth for field defaults, and `Options_API::get_default_option()` reads it instead of building every field definition. That is what makes an option read safe before `init` — building the definitions runs `esc_html__()` on every label and triggers WordPress's "translation loading triggered too early" notice.
+`Settings::get_defaults()` is the single source of truth for field defaults; `Options_API::get_default_option()` reads it instead of building every field definition — which is what makes an option read safe before `init`, since building definitions runs `esc_html__()` on every label and triggers WordPress's "translation loading triggered too early" notice.
 
-Four rules govern the array. Breaking any of them produces a defect that phpcs, phpstan, and static inspection all miss:
+Four rules govern the array; breaking any produces a defect that phpcs, phpstan, and static inspection all miss:
 
-1. **No translation calls**, and nothing that transitively translates. This is the whole point of the array.
+1. **No translation calls**, nor anything that transitively translates — the whole point of the array.
 2. **Values are pre-normalised** to match what `settings_defaults()` emits after its casts. Checkbox defaults are `1`/`0`, never `true`/`false` — a `false` where the saved default is `0` breaks block attributes and REST schemas typed `number`.
-3. **Every registered option has an entry**, including fields whose definition omits `'default'` entirely. Those resolve to `''` in `settings_defaults()`, so without an explicit `''` here the option silently resolves to `false`. Section headers and descriptive text are the only exclusions.
+3. **Every registered option has an entry**, including fields whose definition omits `'default'` — those resolve to `''` in `settings_defaults()`, so without an explicit `''` here the option silently resolves to `false`. Section headers and descriptive text are the only exclusions.
 4. **The array is unfiltered.** `{$prefix}_settings_defaults` is applied by the two consumers — `settings_defaults()` and `Options_API::get_default_option()` — so it runs exactly once on each path, and a filter callback cannot recurse into field building.
 
-A default that must be translated or computed at runtime cannot live in the array. Store the raw base value and have the consumer pass the translated or computed value as the getter's second argument, which short-circuits the default lookup entirely:
+A default needing translation or runtime computation cannot live in the array — store the raw base value and have the consumer pass the translated/computed value as the getter's second argument, short-circuiting the default lookup:
 
 ```php
 $title = plugin_get_option( 'toc_title', __( 'Table of Contents', 'text-domain' ) );
 ```
 
-`Settings::$prefix` must be initialised at its declaration, not only in the constructor. The static methods are reachable on the frontend where the Settings object is never instantiated, and a null prefix there fires `_settings_defaults` instead of `{$prefix}_settings_defaults`.
+`Settings::$prefix` must be initialised at declaration, not only in the constructor — static methods are reachable on the frontend where the Settings object is never instantiated, and a null prefix there fires `_settings_defaults` instead of `{$prefix}_settings_defaults`.
 
-Verify the invariant with `dev-tools/check-settings-defaults.sh <plugin>` after any settings change. It compares `get_defaults()` against `settings_defaults()` through wp-cli and reports missing keys, mismatched values, and orphaned entries.
+Verify the invariant with `dev-tools/check-settings-defaults.sh <plugin>` after any settings change — it compares `get_defaults()` against `settings_defaults()` via wp-cli, reporting missing keys, mismatched values, and orphaned entries.
 
 ## Field definition format
 
@@ -179,4 +179,4 @@ Each entry in `get_registered_settings()` is keyed by section (tab) ID, containi
 
 ## Assets
 
-Scripts and styles are registered (not enqueued) in `admin_enqueue_scripts` and enqueued only on the plugin's own settings page via `Settings_API::enqueue_scripts_styles()`. The JS handle pattern is `wz-{$prefix}-admin`, `wz-{$prefix}-codemirror`, etc. `SCRIPT_DEBUG` controls whether `.min` variants are loaded.
+Scripts/styles are registered (not enqueued) in `admin_enqueue_scripts` and enqueued only on the plugin's settings page via `Settings_API::enqueue_scripts_styles()`. JS handle pattern: `wz-{$prefix}-admin`, `wz-{$prefix}-codemirror`, etc. `SCRIPT_DEBUG` controls whether `.min` variants load.
