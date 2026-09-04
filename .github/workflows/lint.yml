@@ -1,0 +1,36 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: 'PHP Lint (${{ matrix.php }})'
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest supported, the version PHPCS runs on, current stable and newest.
+        php: ['7.4', '8.0', '8.3', '8.5']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      # These files are copied into plugins that support PHP 7.4 and up, so
+      # every one of them has to parse on every supported version.
+      - name: Check PHP syntax
+        run: |
+          find . -name '*.php' \
+            -not -path './vendor/*' \
+            -not -path './_site/*' \
+            -print0 | xargs -0 -n1 -P4 php -l

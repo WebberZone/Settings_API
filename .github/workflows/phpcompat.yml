@@ -1,0 +1,48 @@
+name: PHP Compatibility
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  phpcompat:
+    name: 'PHP Compatibility Check'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          coverage: none
+
+      # Create isolated environment for PHPCompatibility with PHPCS 4.x
+      - name: Setup PHPCompatibility
+        run: |
+          mkdir phpcompat-tools
+          cd phpcompat-tools
+          composer init --name="temp/phpcompat" --type=project --no-interaction
+          composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer require --dev \
+            squizlabs/php_codesniffer:"^4.0" \
+            phpcompatibility/php-compatibility:"dev-develop" \
+            dealerdirect/phpcodesniffer-composer-installer:"^1.0" \
+            --no-interaction
+
+      # Check PHP 7.4 through 8.6 compatibility
+      - name: Check PHP Compatibility (7.4-8.6)
+        run: |
+          cd phpcompat-tools
+          ./vendor/bin/phpcs -p \
+            --standard=PHPCompatibility \
+            --runtime-set testVersion 7.4-8.6 \
+            --extensions=php \
+            --ignore=*/vendor/*,*/node_modules/*,*/_site/* \
+            ../ || exit_code=$?
+
+          # Exit with the phpcs exit code (if set)
+          exit ${exit_code:-0}

@@ -3,6 +3,11 @@
 /build/
 .commandcode/
 
+# Composer
+/vendor/
+/phpcompat-tools/
+/phpcs-report.xml
+
 .devin/
 
 # Testing

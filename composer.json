@@ -1,0 +1,45 @@
+{
+	"name": "webberzone/settings-api",
+	"description": "Reusable settings framework wrapping the WordPress Settings API, shared across WebberZone plugins.",
+	"type": "library",
+	"license": "gpl-2.0-or-later",
+	"authors": [
+		{
+			"name": "Ajay D'Souza",
+			"homepage": "https://webberzone.com"
+		}
+	],
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"wp-coding-standards/wpcs": "^3",
+		"dealerdirect/phpcodesniffer-composer-installer": "^1"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"phpcs": "vendor/bin/phpcs -p -s --standard=phpcs.xml.dist",
+		"phpcbf": "vendor/bin/phpcbf -p -s --standard=phpcs.xml.dist",
+		"lint": "find . -name '*.php' -not -path './vendor/*' -not -path './phpcompat-tools/*' -not -path './_site/*' -print0 | xargs -0 -n1 -P8 php -l > /dev/null",
+		"phpcompat:setup": [
+			"@php -r \"if (!is_dir('phpcompat-tools')) { mkdir('phpcompat-tools'); }\"",
+			"@php -r \"if (!file_exists('phpcompat-tools/composer.json')) { file_put_contents('phpcompat-tools/composer.json', '{\\\"name\\\":\\\"temp/phpcompat\\\",\\\"type\\\":\\\"project\\\"}'); }\"",
+			"@composer config --working-dir=phpcompat-tools allow-plugins.dealerdirect/phpcodesniffer-composer-installer true",
+			"@composer require --working-dir=phpcompat-tools --dev --quiet --no-interaction squizlabs/php_codesniffer:^4.0 phpcompatibility/php-compatibility:dev-develop dealerdirect/phpcodesniffer-composer-installer:^1.0"
+		],
+		"phpcompat": [
+			"@phpcompat:setup",
+			"phpcompat-tools/vendor/bin/phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.4-8.6 --extensions=php --ignore=*/vendor/*,*/node_modules/*,*/phpcompat-tools/*,*/_site/* ."
+		],
+		"phpcompat:clean": "rm -rf phpcompat-tools",
+		"test": [
+			"@lint",
+			"@phpcs",
+			"@phpcompat"
+		]
+	}
+}

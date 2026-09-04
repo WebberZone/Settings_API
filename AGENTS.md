@@ -20,7 +20,20 @@ Not a standalone WordPress plugin — no WordPress.org listing or webberzone.com
 
 WebberZone Settings API is a reusable PHP library wrapping the native WordPress Settings API, powering admin interfaces across WebberZone plugins (Better Search, Contextual Related Posts, Knowledge Base, etc.). Not distributed as a Composer package — consuming plugins copy the files into their own source tree, adjusting namespace, prefix, and option key.
 
-No `composer.json`, `package.json`, or build system. CSS/JS assets are committed as both source and pre-minified files. No automated tests.
+No `package.json` or build system. CSS/JS assets are committed as both source and pre-minified files. There are no unit tests — the library has no bootstrappable runtime of its own, so CI verifies it statically instead.
+
+## Commands
+
+```bash
+composer install     # dev tooling only; nothing ships from vendor/
+composer test        # lint + phpcs + phpcompat — the full check
+composer phpcbf      # auto-fix code style; run before committing PHP
+composer phpcs
+composer lint        # php -l across every PHP file
+composer phpcompat   # PHP 7.4-8.6 compatibility
+```
+
+CI runs the same three checks on every push and pull request (`.github/workflows/`). PHPStan is deliberately absent: `get_taxonomies( $args, 'objects' )` is typed `array<int, WP_Taxonomy>` in `php-stubs/wordpress-stubs` when WordPress actually returns a string-keyed array, which makes the `public_taxonomies` loop in `class-settings.php` report six cascading false positives.
 
 ## Repository structure
 
