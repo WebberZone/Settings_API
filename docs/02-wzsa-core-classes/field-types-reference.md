@@ -11,7 +11,7 @@ order: 2
 
 `Settings_Form` (`settings/class-settings-form.php`) holds one `callback_*` method per field type. `Settings_API::admin_init()` wires each registered field to the matching callback, and every callback runs its HTML through the `{$prefix}_after_setting_output` filter before echoing.
 
-An unrecognised `type` falls through to `callback_missing()`, which prints a notice naming the field — useful when a typo silently drops a setting. On save, the same unknown type falls back to `Settings_Sanitize::sanitize_missing()`, so nothing is stored raw.
+An unrecognized `type` falls through to `callback_missing()`, which prints a notice naming the field — useful when a typo silently drops a setting. On save, the same unknown type falls back to `Settings_Sanitize::sanitize_missing()`, so nothing is stored raw.
 
 ## Text and text-like
 
