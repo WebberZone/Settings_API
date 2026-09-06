@@ -105,7 +105,7 @@ class Settings_Form {
 		if ( is_array( $default ) ) {
 			$default = implode( ',', array_map( 'strval', $default ) );
 		}
-		$default = trim( (string) $default );
+		$default = trim( (string) $default, " \t\n\r\0\x0B" );
 
 		// Map option keys to their labels where the field has a choices list.
 		if ( ! empty( $args['options'] ) && is_array( $args['options'] ) ) {
@@ -123,7 +123,7 @@ class Settings_Form {
 			} elseif ( '' !== $default && 'multicheck' === $type ) {
 				$labels = array();
 				foreach ( explode( ',', $default ) as $key ) {
-					$key      = trim( $key );
+					$key      = trim( $key, " \t\n\r\0\x0B" );
 					$labels[] = isset( $args['options'][ $key ] ) && is_string( $args['options'][ $key ] ) ? $args['options'][ $key ] : $key;
 				}
 				$default = implode( ', ', $labels );
@@ -195,7 +195,7 @@ class Settings_Form {
 			return $this->normalize_list_value( $value ) !== $this->normalize_list_value( $default );
 		}
 
-		return trim( (string) $value ) !== trim( (string) $default );
+		return trim( (string) $value, " \t\n\r\0\x0B" ) !== trim( (string) $default, " \t\n\r\0\x0B" );
 	}
 
 	/**
@@ -279,7 +279,7 @@ class Settings_Form {
 		if ( $default_class ) {
 			$class = $default_class . ' ' . $class;
 		}
-		return trim( $class );
+		return trim( $class, " \t\n\r\0\x0B" );
 	}
 
 	/**
