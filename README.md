@@ -111,7 +111,7 @@ Implement `get_registered_settings()` in your copied `Settings` class. Fields ar
 ),
 ```
 
-26 field types are available — text, url, csv, numbercsv, postids, color, number, textarea, css, html, wysiwyg, checkbox, toggle, multicheck, radio, radiodesc, select, posttypes, taxonomies, thumbsizes, file, password, sensitive, repeater, header, and descriptive_text. See the [field types reference](https://webberzone.github.io/Settings_API/docs/02-wzsa-core-classes/field-types-reference/).
+27 field types are available — text, url, csv, numbercsv, postids, datetime, color, number, textarea, css, html, wysiwyg, checkbox, toggle, multicheck, radio, radiodesc, select, posttypes, taxonomies, thumbsizes, file, password, sensitive, repeater, header, and descriptive_text. See the [field types reference](https://webberzone.github.io/Settings_API/docs/02-wzsa-core-classes/field-types-reference/).
 
 ### 5. Instantiate the Settings API
 

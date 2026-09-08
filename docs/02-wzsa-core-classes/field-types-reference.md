@@ -22,6 +22,7 @@ An unrecognized `type` falls through to `callback_missing()`, which prints a not
 | `csv` | Single-line input | A comma-separated list of strings; each item is trimmed. |
 | `numbercsv` | Single-line input | A comma-separated list of numbers. |
 | `postids` | Single-line input | A comma-separated list of post IDs. Renders as `text`. |
+| `datetime` | Local date/time input | Renders as `datetime-local` and accepts `Y-m-dTH:i` values in the site's timezone. |
 | `password` | Password input | Sanitized with `sanitize_text_field()`. Use `sensitive` for API keys. |
 | `sensitive` | Password-style input | Value is encrypted at rest and masked in the UI, showing only the last four characters. |
 | `number` | Number input | Uses `min`, `max`, and `step`. |

@@ -34,6 +34,7 @@ Every callback receives the field configuration as its second argument, which is
 | `sanitize_csv_field()` | `csv` | Sanitizes the string, then trims each comma-separated item. |
 | `sanitize_numbercsv_field()` | `numbercsv` | Casts each item with `absint()` and drops empties. |
 | `sanitize_postids_field()` | `postids` | Casts each item with `absint()` and drops IDs that no longer resolve to a post. |
+| `sanitize_datetime_field()` | `datetime` | Accepts strict `Y-m-dTH:i` values and rejects malformed, calendar-invalid, and non-existent local times caused by daylight-saving transitions. |
 | `sanitize_checkbox_field()` | `checkbox`, `toggle` | Returns `1` or `0`. The hidden `-1` companion input is what makes an unchecked box save as `0`. |
 | `sanitize_multicheck_field()` | `multicheck` | Returns a comma-separated list of the checked keys; `-1` means nothing checked. |
 | `sanitize_posttypes_field()` | `posttypes` | Delegates to `sanitize_multicheck_field()`. |
