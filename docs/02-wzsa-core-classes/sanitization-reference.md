@@ -2,7 +2,7 @@
 slug: sanitization-reference
 title: "Sanitization reference"
 sections: [02-wzsa-core-classes]
-tags: [settings-api, sanitization, security, developer]
+tags: [developer, sanitization, security, settings-api]
 status: publish
 order: 3
 ---

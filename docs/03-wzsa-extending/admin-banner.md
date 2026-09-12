@@ -2,7 +2,7 @@
 slug: admin-banner
 title: "Admin banner"
 sections: [03-wzsa-extending]
-tags: [settings-api, admin, branding, developer]
+tags: [admin, branding, developer, settings-api]
 status: publish
 order: 4
 ---

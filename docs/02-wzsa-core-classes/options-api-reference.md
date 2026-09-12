@@ -2,7 +2,7 @@
 slug: options-api-reference
 title: "Options_API reference"
 sections: [02-wzsa-core-classes]
-tags: [settings-api, options, multisite, developer]
+tags: [developer, multisite, options, settings-api]
 status: publish
 order: 4
 ---

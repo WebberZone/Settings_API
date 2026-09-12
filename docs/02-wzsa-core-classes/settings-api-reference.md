@@ -2,7 +2,7 @@
 slug: settings-api-reference
 title: "Settings_API reference"
 sections: [02-wzsa-core-classes]
-tags: [settings-api, reference, developer]
+tags: [developer, reference, settings-api]
 status: publish
 order: 1
 ---

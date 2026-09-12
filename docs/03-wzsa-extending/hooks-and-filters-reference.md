@@ -2,7 +2,7 @@
 slug: hooks-and-filters-reference
 title: "Hooks and filters reference"
 sections: [03-wzsa-extending]
-tags: [settings-api, hooks, filters, reference, developer]
+tags: [developer, filters, hooks, reference, settings-api]
 status: publish
 order: 5
 ---

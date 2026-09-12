@@ -2,7 +2,7 @@
 slug: field-types-reference
 title: "Field types reference"
 sections: [02-wzsa-core-classes]
-tags: [settings-api, fields, reference, developer]
+tags: [developer, fields, reference, settings-api]
 status: publish
 order: 2
 ---

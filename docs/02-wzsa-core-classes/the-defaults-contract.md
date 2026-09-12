@@ -2,7 +2,7 @@
 slug: the-defaults-contract
 title: "The defaults contract"
 sections: [02-wzsa-core-classes]
-tags: [settings-api, defaults, developer]
+tags: [defaults, developer, settings-api]
 status: publish
 order: 5
 ---

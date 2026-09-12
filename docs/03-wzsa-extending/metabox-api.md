@@ -2,7 +2,7 @@
 slug: metabox-api
 title: "Metabox API"
 sections: [03-wzsa-extending]
-tags: [settings-api, metabox, developer]
+tags: [developer, metabox, settings-api]
 status: publish
 order: 2
 ---

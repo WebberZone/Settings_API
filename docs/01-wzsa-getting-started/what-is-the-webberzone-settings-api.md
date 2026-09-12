@@ -2,7 +2,7 @@
 slug: what-is-the-webberzone-settings-api
 title: "What is the WebberZone Settings API"
 sections: [01-wzsa-getting-started]
-tags: [settings-api, overview, developer]
+tags: [developer, overview, settings-api]
 status: publish
 order: 1
 ---

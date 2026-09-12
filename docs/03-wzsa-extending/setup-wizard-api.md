@@ -2,7 +2,7 @@
 slug: setup-wizard-api
 title: "Setup wizard API"
 sections: [03-wzsa-extending]
-tags: [settings-api, wizard, onboarding, developer]
+tags: [developer, onboarding, settings-api, wizard]
 status: publish
 order: 1
 ---

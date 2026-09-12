@@ -2,7 +2,7 @@
 slug: integrating-the-settings-api
 title: "Integrating the Settings API"
 sections: [01-wzsa-getting-started]
-tags: [settings-api, integration, developer]
+tags: [developer, integration, settings-api]
 status: publish
 order: 2
 ---

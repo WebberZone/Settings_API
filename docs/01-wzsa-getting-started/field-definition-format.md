@@ -2,7 +2,7 @@
 slug: field-definition-format
 title: "Field definition format"
 sections: [01-wzsa-getting-started]
-tags: [settings-api, fields, developer]
+tags: [developer, fields, settings-api]
 status: publish
 order: 3
 ---

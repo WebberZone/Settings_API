@@ -2,7 +2,7 @@
 slug: hook-registry
 title: "Hook Registry"
 sections: [03-wzsa-extending]
-tags: [settings-api, hooks, developer]
+tags: [developer, hooks, settings-api]
 status: publish
 order: 3
 ---
