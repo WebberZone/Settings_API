@@ -12,6 +12,7 @@
 
 # Testing
 /.playwright-mcp
+.phpunit.result.cache
 
 # Jekyll
 _site/
