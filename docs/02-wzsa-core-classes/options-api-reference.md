@@ -9,7 +9,7 @@ order: 4
 
 [kbtoc]
 
-`Options_API` (`class-options-api.php`) is the settings read/write layer a plugin exposes to its own code, and the counterpart to a procedural `*_get_option()` helper. Unlike the example controller, this file is meant to be copied close to verbatim — change only the namespace and the two constants:
+`Options_API` (`class-options-api.php`) is the settings read/write layer a plugin exposes to its own code, and the counterpart to a procedural `*_get_option()` helper. Copy this file close to verbatim, changing only the namespace and these two constants:
 
 ```php
 const SETTINGS_OPTION = 'my_plugin_settings';
@@ -27,7 +27,7 @@ const FILTER_PREFIX   = 'my_plugin';
 | `update_option( $key, $value )` | bool | Writes one key, filtered through `{$prefix}_update_option`. |
 | `update_settings( array $settings, bool $merge = true, bool $autoload = true )` | bool | Writes many keys at once; `$merge` false replaces the option outright. |
 | `delete_option( $key )` | bool | Removes one key from the option. |
-| `get_settings_defaults()` | array | Built from the field definitions — only safe **after** `init`. |
+| `get_settings_defaults()` | array | Built from the field definitions: only safe **after** `init`. |
 | `get_default_option( $key )` | mixed | One default from the flat `get_defaults()` array; safe before `init`. Returns `false` for unregistered keys. |
 | `get_registered_settings_types()` | array | `field_id => type` for every registered field, filtered through `{$prefix}_get_settings_types`. |
 | `reset_settings()` | bool | Overwrites the option with the defaults. |
@@ -35,13 +35,13 @@ const FILTER_PREFIX   = 'my_plugin';
 
 ## The cache is keyed by blog ID
 
-The per-request cache is **not** a single static array; it is keyed by blog ID. An unkeyed cache returns the wrong site's settings after a `switch_to_blog()` in the same request — which is exactly what `get_blog_option()` does internally, and what network admin screens do in a loop. On single site the key is always `0`.
+The per-request cache is **not** a single static array; it is keyed by blog ID. An unkeyed cache returns the wrong site's settings after a `switch_to_blog()` in the same request, which is exactly what `get_blog_option()` does internally, and what network admin screens do in a loop. On single site the key is always `0`.
 
 ## Two default paths, on purpose
 
 `get_settings_defaults()` calls `Settings::settings_defaults()`, which walks the full field definitions. Those definitions call `esc_html__()` on every label, so running them before `init` triggers WordPress's *translation loading triggered too early* notice.
 
-`get_default_option()` therefore reads `Settings::get_defaults()` instead — a flat array with no translation calls — making a single-key read safe at any point in the request. The [defaults contract]({{ '/docs/02-wzsa-core-classes/the-defaults-contract/' | relative_url }}) is what keeps the two in agreement.
+`get_default_option()` therefore reads `Settings::get_defaults()` instead (a flat array with no translation calls), making a single-key read safe at any point in the request. The [defaults contract]({{ '/docs/02-wzsa-core-classes/the-defaults-contract/' | relative_url }}) is what keeps the two in agreement.
 
 ## Filters
 
@@ -67,7 +67,7 @@ function my_plugin_get_option( $key = '', $default_value = null ) {
 }
 ```
 
-Passing an explicit second argument short-circuits the default lookup entirely — which is how a default that must be translated or computed at runtime is handled:
+Passing an explicit second argument short-circuits the default lookup. Use this for a default that must be translated or computed at runtime:
 
 ```php
 $title = my_plugin_get_option( 'toc_title', __( 'Table of Contents', 'my-plugin' ) );

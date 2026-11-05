@@ -9,7 +9,7 @@ order: 1
 
 [kbtoc]
 
-The WebberZone Settings API is a reusable PHP library that wraps the [native WordPress Settings API](https://developer.wordpress.org/plugins/settings/settings-api/). It turns a nested PHP array of field definitions into a complete tabbed admin screen — menu registration, rendering, sanitization, defaults, and asset loading included.
+The WebberZone Settings API is a reusable PHP library that wraps the [native WordPress Settings API](https://developer.wordpress.org/plugins/settings/settings-api/). It turns a nested PHP array of field definitions into a complete tabbed admin screen: menu registration, rendering, sanitization, defaults, and asset loading included.
 
 It powers the admin interfaces of Better Search, Contextual Related Posts, Knowledge Base, Top 10, and the other WebberZone plugins.
 
@@ -72,5 +72,5 @@ When you copy the library into a plugin, rename the root namespace segment (`Web
 
 ## Where to next
 
-- [Integrating the Settings API]({{ '/docs/01-wzsa-getting-started/integrating-the-settings-api/' | relative_url }}) — the step-by-step copy-and-wire guide.
-- [Field definition format]({{ '/docs/01-wzsa-getting-started/field-definition-format/' | relative_url }}) — the array structure everything is built from.
+- [Integrating the Settings API]({{ '/docs/01-wzsa-getting-started/integrating-the-settings-api/' | relative_url }}): the step-by-step copy-and-wire guide.
+- [Field definition format]({{ '/docs/01-wzsa-getting-started/field-definition-format/' | relative_url }}): the array structure everything is built from.

@@ -9,7 +9,7 @@ order: 5
 
 [kbtoc]
 
-`Settings::get_defaults()` is the single source of truth for field defaults, and `Options_API::get_default_option()` reads it instead of building every field definition. That is what makes an option read safe before `init` — building the definitions runs `esc_html__()` on every label and triggers WordPress's *translation loading triggered too early* notice.
+`Settings::get_defaults()` is the single source of truth for field defaults, and `Options_API::get_default_option()` reads it instead of building every field definition. That is what makes an option read safe before `init`: building the definitions runs `esc_html__()` on every label and triggers WordPress's *translation loading triggered too early* notice.
 
 Four rules govern the array. Breaking any of them produces a defect that phpcs, phpstan, and static inspection all miss.
 
@@ -27,7 +27,7 @@ Including fields whose definition omits `'default'` entirely. Those resolve to `
 
 ## 4. The array is unfiltered
 
-`{$prefix}_settings_defaults` is applied by the two consumers — `settings_defaults()` and `Options_API::get_default_option()` — so it runs exactly once on each path, and a filter callback cannot recurse into field building.
+`settings_defaults()` and `Options_API::get_default_option()` each apply `{$prefix}_settings_defaults` once. A filter callback therefore does not recurse into field building.
 
 ## Defaults that cannot be constants
 

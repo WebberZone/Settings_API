@@ -29,16 +29,16 @@ Replace `WebberZone\Settings_API` with your plugin's root namespace throughout. 
 
 ## 3. Update identifiers
 
-The example files ship with the sample identifiers used by Add to All. Replace them everywhere:
+The example settings controller uses the identifiers below. Replace them throughout the copied controller:
 
 | What | Sample value | Replace with |
 |---|---|---|
-| Hook prefix | `ata` | Your plugin prefix, e.g. `crp`, `bsearch` |
-| Option key | `ata_settings` | Your option name |
-| Text domain | `add-to-all` | Your text domain |
-| Menu slugs | `ata_options_page` | Your menu slug |
+| Hook prefix | `settings_api` | Your plugin prefix, e.g. `crp`, `bsearch` |
+| Option key | `settings_api_settings` | Your option name |
+| Text domain | `settings-api` | Your text domain |
+| Menu slugs | `settings_api_options_page` | Your menu slug |
 
-`Options_API` holds two of these as class constants:
+`Options_API` still carries the legacy sample values `ata_settings` and `ata` in its `SETTINGS_OPTION` and `FILTER_PREFIX` constants. Replace those too, using the same option name and prefix as your controller:
 
 ```php
 const SETTINGS_OPTION = 'my_plugin_settings';
@@ -88,7 +88,7 @@ Pass your **plugin's own version** as `props['version']`. It is used to cache-bu
 
 ## 6. Maintain the defaults array
 
-`Settings::get_defaults()` is the single source of truth for defaults and must stay in sync with the field definitions. The rules are strict and none of them are caught by phpcs or phpstan — read [The defaults contract]({{ '/docs/02-wzsa-core-classes/the-defaults-contract/' | relative_url }}) before you ship.
+`Settings::get_defaults()` is the single source of truth for defaults and must stay in sync with the field definitions. The rules are strict and none of them are caught by phpcs or phpstan: read [The defaults contract]({{ '/docs/02-wzsa-core-classes/the-defaults-contract/' | relative_url }}) before you ship.
 
 ## 7. Expose a getter
 
@@ -102,4 +102,4 @@ function my_plugin_get_option( $key = '', $default_value = null ) {
 
 ## Keeping the copy in sync
 
-Because the library is copy-pasted, an upstream fix has to be propagated by hand. The `Settings_API` repository is the canonical source for `settings/*.php` and `class-admin-banner.php`. Shared PHP is never byte-identical — the namespace and the per-plugin `@since` tags differ — but the CSS and JS should be.
+Because the library is copy-pasted, an upstream fix has to be propagated by hand. The `Settings_API` repository is the canonical source for `settings/*.php` and `class-admin-banner.php`. Shared PHP is never byte-identical (the namespace and the per-plugin `@since` tags differ), but the CSS and JS should be.

@@ -32,7 +32,7 @@ new Metabox_API(
 | `prefix` | Used for hooks and for the meta keys. |
 | `post_type` | Post type, list of post types, or `WP_Screen` the box appears on. |
 | `title` | Metabox heading. |
-| `registered_settings` | A flat list of field definitions — not the tab-keyed structure used by the settings page. |
+| `registered_settings` | A flat list of field definitions: not the tab-keyed structure used by the settings page. |
 | `translation_strings` | Label overrides passed through to `Settings_Form`. |
 
 The constructor hooks itself to `admin_enqueue_scripts`, `add_meta_boxes`, and `save_post_{$post_type}`.
@@ -49,7 +49,7 @@ A field whose submitted value is empty has its meta row deleted rather than stor
 
 ## Saving
 
-`save()` bails on autosave, verifies the `{$prefix}_meta_box_nonce` nonce, and checks `edit_post` for the current user. Each posted value is then run through `Settings_Sanitize::sanitize_{$type}_field()` for its own field type — an unknown type falls through to `sanitize_missing()`. Types listed in `{$prefix}_metabox_non_setting_types` (`header` and `descriptive_text` by default) are skipped.
+`save()` bails on autosave, verifies the `{$prefix}_meta_box_nonce` nonce, and checks `edit_post` for the current user. Each posted value is then run through `Settings_Sanitize::sanitize_{$type}_field()` for its own field type: an unknown type falls through to `sanitize_missing()`. Types listed in `{$prefix}_metabox_non_setting_types` (`header` and `descriptive_text` by default) are skipped.
 
 ## Hooks
 

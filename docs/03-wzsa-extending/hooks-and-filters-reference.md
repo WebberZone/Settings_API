@@ -9,7 +9,7 @@ order: 5
 
 [kbtoc]
 
-Every hook the library fires is namespaced with the `$prefix` you passed to `Settings_API` — shown here as `{$prefix}`. A plugin using the prefix `crp` listens on `crp_settings_sanitize`, and so on.
+Every hook the library fires is namespaced with the `$prefix` you passed to `Settings_API`. The examples use `{$prefix}` to represent it. A plugin using the prefix `crp` listens on `crp_settings_sanitize`, and so on.
 
 ## Settings page
 
@@ -21,8 +21,8 @@ Every hook the library fires is namespaced with the `$prefix` you passed to `Set
 | `{$prefix}_settings_{$tab}_sanitize` | filter | `Settings_API::settings_sanitize()` | `$input` |
 | `{$prefix}_settings_sanitize` | filter | `Settings_API::settings_sanitize()` | `$output`, `$input` |
 | `{$prefix}_settings_form_buttons` | action | `Settings_API::show_form()` | `$tab_id`, `$tab_name`, `$settings_sections` |
-| `{$prefix}_settings_page_header_before` | action | `Settings_API::plugin_settings()` | — |
-| `{$prefix}_settings_page_header` | action | `Settings_API::plugin_settings()` | — |
+| `{$prefix}_settings_page_header_before` | action | `Settings_API::plugin_settings()` | Not applicable |
+| `{$prefix}_settings_page_header` | action | `Settings_API::plugin_settings()` | Not applicable |
 
 ## Field rendering
 
@@ -69,15 +69,15 @@ These use the `FILTER_PREFIX` constant on your copy of `Options_API`, which shou
 | `{$prefix}_wizard_step_processed` | action | `$step`, `$settings` |
 | `{$prefix}_wizard_completed` | action | `$prefix` |
 | `{$prefix}_wizard_before_actions` | action | `$current_step`, `$total_steps` |
-| `{$prefix}_wizard_completion_before` | action | — |
-| `{$prefix}_wizard_completion_message` | action | — |
-| `{$prefix}_wizard_completion_after` | action | — |
+| `{$prefix}_wizard_completion_before` | action | Not applicable |
+| `{$prefix}_wizard_completion_message` | action | Not applicable |
+| `{$prefix}_wizard_completion_after` | action | Not applicable |
 | `{$prefix}_wizard_completion_buttons` | filter | `$buttons`, `$prefix` |
 | `{$prefix}_wizard_version` | filter | `$version`, `$prefix` |
 
 ## Example controller
 
-These live in `class-settings.php`, the reference implementation you copy — so they exist only if you keep them.
+These live in `class-settings.php`, the reference implementation you copy, so they exist only if you keep them.
 
 | Hook | Type | Arguments |
 |---|---|---|

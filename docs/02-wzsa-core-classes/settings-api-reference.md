@@ -36,7 +36,7 @@ Passed as `$args['props']` and applied by `set_props()`:
 | `admin_footer_text` | `''` | Replaces the admin footer text on your settings page. |
 | `help_sidebar` | `''` | HTML for the contextual help sidebar. |
 | `help_tabs` | `array()` | Contextual help tabs. |
-| `version` | library version | Cache-busting version for enqueued assets — pass your plugin's version. |
+| `version` | library version | Cache-busting version for enqueued assets: pass your plugin's version. |
 
 ## Menu registration
 
@@ -90,7 +90,7 @@ register_setting(
 );
 ```
 
-`type` here is a **JSON Schema** type, not a PHP one. JSON Schema splits what PHP calls an array into two: `array` is an ordered list described by `items`, while `object` is a keyed map described by `properties`. The settings value is a map of named keys whose values each mean something different, so `object` is the correct type — `array` would claim every element follows one rule, which is wrong on both counts.
+`type` here is a **JSON Schema** type, not a PHP one. JSON Schema splits what PHP calls an array into two: `array` is an ordered list described by `items`, while `object` is a keyed map described by `properties`. The settings value is a map of named keys whose values each mean something different, so `object` is the correct type: `array` would claim every element follows one rule, which is wrong on both counts.
 
 Because `sanitize_callback` is registered as a filter on `sanitize_option_{$option}`, it also runs when the option is written through `update_option()`, not only when the settings form is submitted.
 

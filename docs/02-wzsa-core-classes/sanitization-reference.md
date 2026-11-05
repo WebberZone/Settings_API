@@ -18,7 +18,7 @@ Since Settings API 3.0.0 every field type resolves to a callback. A type with no
 1. `settings_sanitize()` starts from the **stored** option, so untouched tabs keep their values and no submitted value reaches the output before it is sanitized.
 2. The tab-specific filter `{$prefix}_settings_{$tab}_sanitize` runs on the raw input.
 3. Every registered field is walked. Types listed in `{$prefix}_non_setting_types` (`header`, `descriptive_text` by default) are skipped.
-4. Submitted fields go through their sanitizer. Fields absent from the submission are deleted — **unless** they are locked (`disabled` or `pro`), because a disabled input is never posted.
+4. Submitted fields go through their sanitizer. Fields absent from the submission are deleted: **unless** they are locked (`disabled` or `pro`), because a disabled input is never posted.
 5. Keys the tab filter added that are not registered settings are still run through `sanitize_missing()` rather than stored raw.
 6. `{$prefix}_settings_sanitize` filters the final array before it is written.
 
@@ -33,7 +33,7 @@ Every callback receives the field configuration as its second argument, which is
 | `sanitize_number_field()` | `number` | `filter_var()` with `FILTER_SANITIZE_NUMBER_INT`. |
 | `sanitize_csv_field()` | `csv` | Sanitizes the string, then trims each comma-separated item. |
 | `sanitize_numbercsv_field()` | `numbercsv` | Casts each item with `absint()` and drops empties. |
-| `sanitize_postids_field()` | `postids` | Casts each item with `absint()` and drops IDs that no longer resolve to a post. |
+| `sanitize_postids_field()` | `postids` | Casts each item with `absint()` and drops missing posts. When a user is logged in, also drops posts that user cannot read through `read_post`. Without a logged-in user, such as in CLI or cron, only the existence check applies. |
 | `sanitize_datetime_field()` | `datetime` | Accepts strict `Y-m-dTH:i` values and rejects malformed, calendar-invalid, and non-existent local times caused by daylight-saving transitions. |
 | `sanitize_checkbox_field()` | `checkbox`, `toggle` | Returns `1` or `0`. The hidden `-1` companion input is what makes an unchecked box save as `0`. |
 | `sanitize_multicheck_field()` | `multicheck` | Returns a comma-separated list of the checked keys; `-1` means nothing checked. |
@@ -57,7 +57,7 @@ Every callback receives the field configuration as its second argument, which is
 
 ## Choice fields fall back to their default
 
-`sanitize_choice()` backs `select`, `radio`, `radiodesc`, and `thumbsizes`. A submitted value that is not among the field's declared options is replaced by the field's `default` — not blanked — and values are matched both directly and through `sanitize_key()`, because the select callback prints its option values that way.
+`sanitize_choice()` backs `select`, `radio`, `radiodesc`, and `thumbsizes`. A submitted value that is not among the field's declared options is replaced by the field's `default`. Values are matched both directly and through `sanitize_key()`, because the select callback prints its option values that way.
 
 ## Helper
 

@@ -11,13 +11,13 @@ order: 2
 
 `Settings_Form` (`settings/class-settings-form.php`) holds one `callback_*` method per field type. `Settings_API::admin_init()` wires each registered field to the matching callback, and every callback runs its HTML through the `{$prefix}_after_setting_output` filter before echoing.
 
-An unrecognized `type` falls through to `callback_missing()`, which prints a notice naming the field — useful when a typo silently drops a setting. On save, the same unknown type falls back to `Settings_Sanitize::sanitize_missing()`, so nothing is stored raw.
+An unrecognized `type` falls through to `callback_missing()`, which prints a notice naming the field. This helps identify field-type typos. On save, the same unknown type falls back to `Settings_Sanitize::sanitize_missing()`, so nothing is stored raw.
 
 ## Text and text-like
 
 | Type | Renders | Notes |
 |---|---|---|
-| `text` | Single-line input | Honours `size`, `placeholder`, `readonly`, `required`, `disabled`. |
+| `text` | Single-line input | Honors `size`, `placeholder`, `readonly`, `required`, `disabled`. |
 | `url` | Single-line input | Sanitized with `esc_url_raw`. |
 | `csv` | Single-line input | A comma-separated list of strings; each item is trimmed. |
 | `numbercsv` | Single-line input | A comma-separated list of numbers. |
@@ -93,7 +93,7 @@ An unrecognized `type` falls through to `callback_missing()`, which prints a not
 | `live_update_field_options` | Maps raw values to display labels for that title. |
 | `new_item_text` | Title shown on a row with no value yet. |
 
-Each row carries a hidden `row_id` so rows stay identifiable across saves and reordering. Sub-field HTML can be filtered with `{$prefix}_repeater_field_{$type}`.
+Each row carries a hidden `row_id` so rows stay identifiable across saves and reordering. Its header is a keyboard-accessible button that exposes its expanded state and the controlled content region. The move and remove buttons have accessible labels. Translate those labels through `translation_strings` using `repeater_move_up`, `repeater_move_down`, and `repeater_remove_item`. Sub-field HTML can be filtered with `{$prefix}_repeater_field_{$type}`.
 
 ## Shared behavior
 

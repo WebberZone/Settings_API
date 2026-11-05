@@ -55,12 +55,12 @@ Every field is run through `Settings_API::parse_field_args()`, which fills in th
 | `name` | `''` | Label shown in the left column. |
 | `desc` | `''` | Description rendered under the field. |
 | `type` | `text` | One of the [supported field types]({{ '/docs/02-wzsa-core-classes/field-types-reference/' | relative_url }}). |
-| `size` | `null` | Input size class — `small`, `regular`, `large`. |
+| `size` | `null` | Input size class: `small`, `regular`, `large`. |
 | `options` | `''` | Choice list for `select`, `radio`, `multicheck`, `thumbsizes`, and the sub-options of `radiodesc`. |
 | `default` | `''` | Default value used until the option is saved. |
 | `min` | `0` | Minimum for `number`. |
 | `max` | `999999` | Maximum for `number`. |
-| `step` | `1` | Step for `number`. |
+| `step` | `1` | Step for the rendered `number` input. Accepts a numeric value or `any`. |
 | `field_class` | `''` | Extra CSS classes on the input. |
 | `field_attributes` | `array()` | Arbitrary HTML attributes as `attribute => value`. |
 | `placeholder` | `''` | Placeholder text. |
@@ -70,7 +70,9 @@ Every field is run through `Settings_API::parse_field_args()`, which fills in th
 | `pro` | `false` | Marks the field as a premium feature; also disables the input. |
 | `section` | current section | Set automatically. |
 
-Some field types accept extra arguments — `chosen` on `select` to enable Tom Select, `fields` / `live_update_field` / `new_item_text` on `repeater`, and `sanitize_callback` to override the type's default sanitizer.
+Some field types accept extra arguments: `chosen` on `select` to enable Tom Select, `fields` / `live_update_field` / `new_item_text` on `repeater`, and `sanitize_callback` to override the type's default sanitizer.
+
+The `step` attribute controls browser input validation. The default number sanitizer still uses `FILTER_SANITIZE_NUMBER_INT`. If you accept decimal values with a fractional step or `any`, supply a `sanitize_callback` that preserves and validates those values.
 
 ## A worked example
 
@@ -116,4 +118,4 @@ public static function settings_general() {
 
 ## Field IDs and the saved option
 
-All fields across all tabs are saved into a **single option** — the `$settings_key` you passed to `Settings_API`. Field IDs must therefore be unique across the entire plugin, not just within a tab.
+All fields across all tabs are saved into a **single option**: the `$settings_key` you passed to `Settings_API`. Field IDs must therefore be unique across the entire plugin, not just within a tab.

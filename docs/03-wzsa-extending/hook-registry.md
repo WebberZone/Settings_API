@@ -9,7 +9,7 @@ order: 3
 
 [kbtoc]
 
-`Hook_Registry` (`util/class-hook-registry.php`) is a static wrapper around `add_action()` and `add_filter()` that refuses duplicate registrations. It exists because the example controllers can be instantiated more than once in a request — on a settings page, in a metabox, and during a wizard step — and WordPress would happily attach the same callback several times.
+`Hook_Registry` (`util/class-hook-registry.php`) is a static wrapper around `add_action()` and `add_filter()` that refuses duplicate registrations. It exists because the example controllers can be instantiated more than once in a request (on a settings page, in a metabox, and during a wizard step), and WordPress would happily attach the same callback several times.
 
 ## Usage
 
@@ -20,7 +20,7 @@ Hook_Registry::add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 Hook_Registry::add_filter( 'the_content', array( $this, 'append_widget' ), 20 );
 ```
 
-Both return `true` when the hook was registered and `false` when it was rejected as a duplicate — or as invalid.
+Both return `true` when the hook was registered and `false` when it was rejected as a duplicate, or as invalid.
 
 ## Methods
 
